@@ -8,7 +8,14 @@ function createPrismaClient() {
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
-  const adapter = new PrismaPg({ connectionString });
+  // max:1 is correct for serverless — each function instance handles one request
+  // at a time, so more connections per instance just waste Supabase's pool budget.
+  const adapter = new PrismaPg({
+    connectionString,
+    max: 1,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
