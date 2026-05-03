@@ -27,7 +27,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       setAuthPhone(user?.phone ?? "");
 
       const res = await fetch("/api/profile");
-      if (!res.ok) { setOnboarding("done"); return; }
+      if (!res.ok) {
+        // If 401, middleware will redirect to login. Any other error (e.g. DB down)
+        // — show onboarding so the user isn't stuck on a blank screen.
+        setOnboarding(res.status === 401 ? "done" : "needed");
+        return;
+      }
       const profile: UserProfile | null = await res.json();
       setOnboarding(!profile || !profile.onboardingComplete ? "needed" : "done");
     }
