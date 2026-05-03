@@ -1,0 +1,42 @@
+import webpush from "web-push";
+import { prisma } from "./prisma";
+
+webpush.setVapidDetails(
+  process.env.VAPID_SUBJECT || "mailto:admin@misu.app",
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PRIVATE_KEY!
+);
+
+export interface PushPayload {
+  title: string;
+  body: string;
+  url?: string;
+}
+
+export async function sendPushToAll(payload: PushPayload): Promise<void> {
+  const subscriptions = await prisma.notificationSubscription.findMany();
+
+  await Promise.allSettled(
+    subscriptions.map(async (sub: { endpoint: string; keys: string }) => {
+      const keys = JSON.parse(sub.keys) as { p256dh: string; auth: string };
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys },
+          JSON.stringify(payload)
+        );
+      } catch (err: unknown) {
+        // 410 Gone = subscription expired, clean it up
+        if (
+          err &&
+          typeof err === "object" &&
+          "statusCode" in err &&
+          err.statusCode === 410
+        ) {
+          await prisma.notificationSubscription.delete({
+            where: { endpoint: sub.endpoint },
+          });
+        }
+      }
+    })
+  );
+}

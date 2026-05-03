@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Contact {
+  id        String           @id @default(cuid())
+  firstName String
+  lastName  String?
+  email     String?
+  phone     String?
+  avatarUrl String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  schedule  CheckInSchedule?
+  checkIns  CheckIn[]
+}
+
+model CheckInSchedule {
+  id             String    @id @default(cuid())
+  contactId      String    @unique
+  contact        Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  frequencyDays  Int
+  catchupFormats String    // JSON array stored as string: ["zoom","facetime","in-person"]
+  nextCheckIn    DateTime
+  lastCheckIn    DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model CheckIn {
+  id          String    @id @default(cuid())
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  scheduledAt DateTime
+  completedAt DateTime?
+  format      String?
+  notes       String?
+  status      String    @default("pending") // pending | completed | skipped
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CalendarShare {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  label     String
+  createdAt DateTime @default(now())
+}
+
+model NotificationSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  keys      String   // JSON: { p256dh, auth }
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,11 @@
+{
+  "buildCommand": "bun --bun node_modules/next/dist/bin/next build",
+  "installCommand": "bun install",
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/notify",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}
