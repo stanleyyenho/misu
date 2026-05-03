@@ -1,12 +1,6 @@
 import webpush from "web-push";
 import { prisma } from "./prisma";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || "mailto:admin@misu.app",
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
-
 export interface PushPayload {
   title: string;
   body: string;
@@ -14,6 +8,11 @@ export interface PushPayload {
 }
 
 export async function sendPushToAll(payload: PushPayload): Promise<void> {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT || "mailto:admin@misu.app",
+    process.env.VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  );
   const subscriptions = await prisma.notificationSubscription.findMany();
 
   await Promise.allSettled(
