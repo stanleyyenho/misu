@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="102" fill="#CDEBD6"/>
-  <path d="M 256 64 A 176 176 0 1 0 256 448 A 144 144 0 1 1 256 64 Z"
-    fill="#FFFFFF" stroke="#1F2024" stroke-width="20"
-    stroke-linejoin="round" stroke-linecap="round"/>
-  <rect x="400" y="80" width="24" height="24" fill="#1F2024"/>
-  <rect x="440" y="112" width="20" height="20" fill="#1F2024"/>
-  <rect x="384" y="136" width="16" height="16" fill="#1F2024"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 192 192">
+  <defs>
+    <mask id="crescent">
+      <rect width="192" height="192" fill="white"/>
+      <circle cx="120" cy="96" r="70" fill="black"/>
+    </mask>
+  </defs>
+  <rect width="192" height="192" rx="38" fill="#CDEBD6"/>
+  <circle cx="96" cy="96" r="80" fill="#1F2024" mask="url(#crescent)"/>
+  <rect x="152" y="30" width="9" height="9" fill="#1F2024"/>
+  <rect x="167" y="44" width="7.5" height="7.5" fill="#1F2024"/>
+  <rect x="150" y="55" width="6" height="6" fill="#1F2024"/>
 </svg>
