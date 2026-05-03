@@ -45,6 +45,8 @@ const bricolage = Bricolage_Grotesque({
   weight: ["500", "600", "700"],
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "misu — stay in touch",
   description: "Relationship maintenance — stay meaningfully connected with the people who matter",
