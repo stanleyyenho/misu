@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bun --bun node_modules/next/dist/bin/next dev --webpack",
-    "build": "bun --bun node_modules/next/dist/bin/next build",
+    "build": "bun --bun run prisma generate && bun --bun node_modules/next/dist/bin/next build",
     "start": "NODE_ENV=production bun --bun run server.ts",
     "lint": "eslint",
     "db:migrate": "bun --bun run prisma migrate dev",
