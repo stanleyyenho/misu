@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/supabase/server";
-
-const anthropic = new Anthropic();
+import { requireEnv } from "@/lib/env";
 
 const TONE_PROMPTS: Record<string, string> = {
   casual: "Write like you're texting a close friend — relaxed, natural, no formality. Short sentences, maybe lowercase, no corporate-speak.",
@@ -18,6 +17,7 @@ const TYPE_PROMPTS: Record<string, string> = {
 };
 
 export async function POST(request: Request) {
+  const anthropic = new Anthropic({ apiKey: requireEnv("ANTHROPIC_API_KEY") });
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
