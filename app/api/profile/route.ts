@@ -6,39 +6,66 @@ export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
-  return NextResponse.json(profile ?? null);
+  try {
+    const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
+    return NextResponse.json(profile ?? null);
+  } catch (err) {
+    console.error("[GET /api/profile]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function PUT(request: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const { firstName, lastName, email, phone, onboardingComplete } = body;
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-  if (firstName !== undefined && !firstName.trim()) {
+  const { firstName, lastName, email, phone, onboardingComplete } = body as {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    onboardingComplete?: boolean;
+  };
+
+  if (firstName !== undefined && !String(firstName).trim()) {
     return NextResponse.json({ error: "firstName cannot be empty" }, { status: 400 });
   }
 
-  const profile = await prisma.userProfile.upsert({
-    where: { userId: user.id },
-    update: {
-      ...(firstName !== undefined && { firstName: firstName.trim() }),
-      ...(lastName !== undefined && { lastName: lastName.trim() }),
-      ...(email !== undefined && { email: email.trim() }),
-      ...(phone !== undefined && { phone: phone.trim() }),
-      ...(onboardingComplete !== undefined && { onboardingComplete }),
-    },
-    create: {
-      userId: user.id,
-      firstName: (firstName ?? "").trim(),
-      lastName: (lastName ?? "").trim(),
-      email: (email ?? user.email ?? "").trim(),
-      phone: (phone ?? user.phone ?? "").trim(),
-      onboardingComplete: onboardingComplete ?? false,
-    },
-  });
+  try {
+    const existing = await prisma.userProfile.findUnique({ where: { userId: user.id } });
 
-  return NextResponse.json(profile);
+    const profile = existing
+      ? await prisma.userProfile.update({
+          where: { userId: user.id },
+          data: {
+            ...(firstName !== undefined && { firstName: String(firstName).trim() }),
+            ...(lastName !== undefined && { lastName: String(lastName).trim() }),
+            ...(email !== undefined && { email: String(email).trim() }),
+            ...(phone !== undefined && { phone: String(phone).trim() }),
+            ...(onboardingComplete !== undefined && { onboardingComplete }),
+          },
+        })
+      : await prisma.userProfile.create({
+          data: {
+            userId: user.id,
+            firstName: String(firstName ?? "").trim(),
+            lastName: String(lastName ?? "").trim(),
+            email: String(email ?? user.email ?? "").trim(),
+            phone: String(phone ?? user.phone ?? "").trim(),
+            onboardingComplete: onboardingComplete ?? false,
+          },
+        });
+
+    return NextResponse.json(profile);
+  } catch (err) {
+    console.error("[PUT /api/profile]", err);
+    return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+  }
 }
