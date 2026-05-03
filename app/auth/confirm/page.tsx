@@ -9,24 +9,29 @@ export default function ConfirmPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const code = searchParams.get("code");
     const token_hash = searchParams.get("token_hash");
     const type = searchParams.get("type") as "email" | "magiclink" | null;
 
-    if (!token_hash || !type) {
-      setError("Invalid confirmation link.");
+    if (code) {
+      // Came via {{ .ConfirmationURL }} redirect — delegate to server-side handler
+      // which properly exchanges the code and sets the auth cookie.
+      window.location.href = `/auth/callback?code=${encodeURIComponent(code)}`;
       return;
     }
 
-    const supabase = createClient();
-    supabase.auth
-      .verifyOtp({ token_hash, type })
-      .then(({ error }) => {
-        if (error) {
-          setError(error.message);
-        } else {
-          window.location.href = "/";
-        }
+    if (token_hash && type) {
+      // Came via direct {{ .TokenHash }} URL — exchange here via browser client.
+      // Pre-fetchers won't reach this branch since they don't execute JS.
+      const supabase = createClient();
+      supabase.auth.verifyOtp({ token_hash, type }).then(({ error }) => {
+        if (error) setError(error.message);
+        else window.location.href = "/";
       });
+      return;
+    }
+
+    setError("Invalid confirmation link.");
   }, [searchParams]);
 
   return (
