@@ -149,7 +149,7 @@ export default function ContactsPage() {
                 </Link>{" "}
                 or{" "}
                 <Link href="/contacts/import" className="underline underline-offset-2 text-primary font-semibold">
-                  import from .vcf
+                  import contacts
                 </Link>
               </p>
             </div>

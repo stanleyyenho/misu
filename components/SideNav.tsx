@@ -37,7 +37,7 @@ export function SideNav() {
         <MisuMark />
         <span
           className="text-2xl tracking-tight"
-          style={{ fontFamily: "var(--font-pixel-display)", letterSpacing: "0.02em" }}
+          style={{ fontFamily: "var(--font-silkscreen)", letterSpacing: "0.02em" }}
         >
           misu
         </span>
