@@ -49,10 +49,11 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
+  const { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes } = body;
 
   const updated = await prisma.contact.updateMany({
     where: { id, userId: user.id },
-    data: body,
+    data: { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes },
   });
   if (updated.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
