@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import useSWR, { mutate } from "swr";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { NotificationBell } from "@/components/NotificationBell";
 import { createClient } from "@/lib/supabase/client";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface CalendarShare {
   id: string;
@@ -43,13 +46,18 @@ function SectionHeader({ label }: { label: string }) {
 
 export default function SettingsPage() {
   const supabase = createClient();
-  const [shares, setShares] = useState<CalendarShare[]>([]);
   const [newLabel, setNewLabel] = useState("");
   const [creating, setCreating] = useState(false);
   const [notifGranted, setNotifGranted] = useState(false);
 
-  // Profile state
+  // SWR-backed remote data
+  const { data: sharesData, mutate: mutateShares } = useSWR<CalendarShare[]>("/api/calendar/share", fetcher);
+  const shares = sharesData ?? [];
+  const { data: profileData } = useSWR<UserProfile>("/api/profile", fetcher);
+
+  // Editable form state — initialized once from SWR cache or network response
   const [profile, setProfile] = useState<UserProfile>({ firstName: "", lastName: "", email: "", phone: "" });
+  const profileInitialized = useRef(false);
   const [savingProfile, setSavingProfile] = useState(false);
 
   // Style calibration state (stored locally for now — future: persist to user profile)
@@ -61,27 +69,35 @@ export default function SettingsPage() {
   const [savingSamples, setSavingSamples] = useState(false);
 
   useEffect(() => {
-    loadShares();
-    loadProfile();
     if (typeof window !== "undefined") {
       if ("Notification" in window) setNotifGranted(Notification.permission === "granted");
       setSampleTexts(localStorage.getItem("misu_sample_texts") ?? "");
     }
+    // Fetch auth user in parallel (only for email/phone fallback on first-time setup)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!profileInitialized.current) {
+        setProfile((p) => ({
+          ...p,
+          email: p.email || user?.email || "",
+          phone: p.phone || user?.phone || "",
+        }));
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function loadProfile() {
-    const { data: { user } } = await supabase.auth.getUser();
-    const res = await fetch("/api/profile");
-    if (res.ok) {
-      const data = await res.json();
+  // Populate form from SWR data (cached or fresh), initialize only once
+  useEffect(() => {
+    if (profileData && !profileInitialized.current) {
+      profileInitialized.current = true;
       setProfile({
-        firstName: data?.firstName ?? "",
-        lastName: data?.lastName ?? "",
-        email: data?.email || user?.email || "",
-        phone: data?.phone || user?.phone || "",
+        firstName: profileData.firstName ?? "",
+        lastName: profileData.lastName ?? "",
+        email: profileData.email ?? "",
+        phone: profileData.phone ?? "",
       });
     }
-  }
+  }, [profileData]);
 
   async function saveProfile() {
     if (!profile.firstName.trim()) { toast.error("First name is required"); return; }
@@ -96,17 +112,13 @@ export default function SettingsPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error ?? "Failed to save profile");
       }
+      mutate("/api/profile", profile, false);
       toast.success("Profile saved!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save profile");
     } finally {
       setSavingProfile(false);
     }
-  }
-
-  async function loadShares() {
-    const res = await fetch("/api/calendar/share");
-    setShares(await res.json());
   }
 
   async function createShare() {
@@ -119,7 +131,7 @@ export default function SettingsPage() {
         body: JSON.stringify({ label: newLabel.trim() }),
       });
       setNewLabel("");
-      await loadShares();
+      await mutateShares();
       toast.success("Calendar link created!");
     } finally {
       setCreating(false);
@@ -132,7 +144,7 @@ export default function SettingsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    await loadShares();
+    await mutateShares();
     toast.info("Calendar link deleted");
   }
 

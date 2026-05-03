@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useSWR, { mutate } from "swr";
 import { BottomNav } from "@/components/BottomNav";
 import { SideNav } from "@/components/SideNav";
 import { OnboardingModal } from "@/components/OnboardingModal";
@@ -14,34 +15,33 @@ interface UserProfile {
   onboardingComplete: boolean;
 }
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw Object.assign(new Error("fetch error"), { status: res.status });
+  return res.json();
+};
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [onboarding, setOnboarding] = useState<"loading" | "needed" | "done">("loading");
   const [authEmail, setAuthEmail] = useState("");
   const [authPhone, setAuthPhone] = useState("");
 
+  const { data: profile, error } = useSWR<UserProfile>("/api/profile", fetcher);
+
   useEffect(() => {
-    async function check() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
       setAuthEmail(user?.email ?? "");
       setAuthPhone(user?.phone ?? "");
-
-      const res = await fetch("/api/profile");
-      if (!res.ok) {
-        // If 401, middleware will redirect to login. Any other error (e.g. DB down)
-        // — show onboarding so the user isn't stuck on a blank screen.
-        setOnboarding(res.status === 401 ? "done" : "needed");
-        return;
-      }
-      const profile: UserProfile | null = await res.json();
-      setOnboarding(!profile || !profile.onboardingComplete ? "needed" : "done");
-    }
-    check();
+    });
   }, []);
 
-  function handleOnboardingComplete() {
-    setOnboarding("done");
-  }
+  // error.status === 401 means middleware will redirect; other errors → show onboarding
+  const onboarding =
+    !profile && !error
+      ? "loading"
+      : error
+        ? (error.status === 401 ? "done" : "needed")
+        : (profile && !profile.onboardingComplete ? "needed" : "done");
 
   return (
     <div className="flex min-h-dvh">
@@ -52,7 +52,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <OnboardingModal
           initialEmail={authEmail}
           initialPhone={authPhone}
-          onComplete={handleOnboardingComplete}
+          onComplete={() => mutate("/api/profile")}
         />
       )}
     </div>

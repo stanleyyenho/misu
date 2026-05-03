@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { getAvatarColor } from "@/lib/avatar-color";
 import { FriendsIllustration } from "@/components/illustrations/FriendsIllustration";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface Contact {
   id: string;
@@ -34,15 +37,10 @@ const PLATFORM_LABELS: Record<string, string> = {
 };
 
 export default function ContactsPage() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
+  const { data: contacts = [] } = useSWR<Contact[]>("/api/contacts", fetcher);
+  const { data: groups = [] } = useSWR<Group[]>("/api/groups", fetcher);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/contacts").then((r) => r.json()).then(setContacts);
-    fetch("/api/groups").then((r) => r.json()).then(setGroups);
-  }, []);
 
   const filtered = contacts.filter((c) => {
     const q = search.toLowerCase();
