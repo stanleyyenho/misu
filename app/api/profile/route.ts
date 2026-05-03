@@ -6,6 +6,11 @@ export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  if (!prisma.userProfile) {
+    console.error("[GET /api/profile] prisma.userProfile is undefined — Prisma client needs regeneration");
+    return NextResponse.json({ error: "Prisma client out of date" }, { status: 500 });
+  }
+
   try {
     const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
     return NextResponse.json(profile ?? null);
@@ -36,6 +41,11 @@ export async function PUT(request: Request) {
 
   if (firstName !== undefined && !String(firstName).trim()) {
     return NextResponse.json({ error: "firstName cannot be empty" }, { status: 400 });
+  }
+
+  if (!prisma.userProfile) {
+    console.error("[PUT /api/profile] prisma.userProfile is undefined — Prisma client needs regeneration");
+    return NextResponse.json({ error: "Prisma client out of date" }, { status: 500 });
   }
 
   try {
