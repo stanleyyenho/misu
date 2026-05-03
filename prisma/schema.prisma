@@ -8,7 +8,7 @@ datasource db {
 
 model Contact {
   id                String               @id @default(cuid())
-  userId            String?
+  userId            String
   firstName         String
   lastName          String?
   email             String?
@@ -28,7 +28,7 @@ model Contact {
 
 model ContactGroup {
   id        String               @id @default(cuid())
-  userId    String?
+  userId    String
   name      String
   createdAt DateTime             @default(now())
   members   ContactGroupMember[]
@@ -103,7 +103,7 @@ model UserProfile {
 
 model CalendarShare {
   id        String   @id @default(cuid())
-  userId    String?
+  userId    String
   token     String   @unique @default(cuid())
   label     String
   createdAt DateTime @default(now())
@@ -111,7 +111,7 @@ model CalendarShare {
 
 model NotificationSubscription {
   id        String   @id @default(cuid())
-  userId    String?
+  userId    String
   endpoint  String   @unique
   keys      String   // JSON: { p256dh, auth }
   createdAt DateTime @default(now())
