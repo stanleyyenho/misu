@@ -186,11 +186,11 @@ export default function LoginPage() {
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  maxLength={6}
+                  maxLength={8}
                   value={emailOtp}
                   onChange={(e) => { setEmailOtp(e.target.value.replace(/\D/g, "")); setError(""); }}
                   onKeyDown={(e) => e.key === "Enter" && verifyEmailOtp()}
-                  placeholder="000000"
+                  placeholder="00000000"
                   className="text-center text-xl tracking-[0.4em] font-mono"
                   style={{ borderRadius: "8px" }}
                   autoFocus
@@ -198,7 +198,7 @@ export default function LoginPage() {
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button
                   onClick={verifyEmailOtp}
-                  disabled={loading || emailOtp.length < 6}
+                  disabled={loading || emailOtp.length < 8}
                   className="w-full"
                   style={{ borderRadius: "8px" }}
                 >
