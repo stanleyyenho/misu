@@ -4,8 +4,8 @@
   "description": "Relationship maintenance — stay meaningfully connected with the people who matter",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAFAFA",
-  "theme_color": "#FAFAFA",
+  "background_color": "#BCE8DC",
+  "theme_color": "#BCE8DC",
   "orientation": "portrait",
   "icons": [
     {
