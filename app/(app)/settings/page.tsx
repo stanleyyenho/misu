@@ -70,10 +70,16 @@ export default function SettingsPage() {
   }, []);
 
   async function loadProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
     const res = await fetch("/api/profile");
     if (res.ok) {
       const data = await res.json();
-      if (data) setProfile({ firstName: data.firstName ?? "", lastName: data.lastName ?? "", email: data.email ?? "", phone: data.phone ?? "" });
+      setProfile({
+        firstName: data?.firstName ?? "",
+        lastName: data?.lastName ?? "",
+        email: data?.email || user?.email || "",
+        phone: data?.phone || user?.phone || "",
+      });
     }
   }
 
@@ -86,10 +92,13 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profile),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error ?? "Failed to save profile");
+      }
       toast.success("Profile saved!");
-    } catch {
-      toast.error("Failed to save profile");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save profile");
     } finally {
       setSavingProfile(false);
     }
