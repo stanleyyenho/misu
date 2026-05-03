@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "@/lib/supabase/server";
 
 const anthropic = new Anthropic();
 
@@ -17,14 +18,17 @@ const TYPE_PROMPTS: Record<string, string> = {
 };
 
 export async function POST(request: Request) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { checkInId, contactId, tone = "casual", checkInType = "generic", platform } = await request.json();
 
   if (!contactId) {
     return NextResponse.json({ error: "contactId is required" }, { status: 400 });
   }
 
-  const contact = await prisma.contact.findUnique({
-    where: { id: contactId },
+  const contact = await prisma.contact.findFirst({
+    where: { id: contactId, userId: user.id },
     select: { firstName: true, lastName: true, notes: true },
   });
 

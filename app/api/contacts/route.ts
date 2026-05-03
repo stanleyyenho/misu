@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "@/lib/supabase/server";
 
 export async function GET() {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const contacts = await prisma.contact.findMany({
+    where: { userId: user.id },
     include: {
       schedule: true,
       groups: { select: { groupId: true } },
@@ -13,6 +18,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = await request.json();
   const { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes } = body;
 
@@ -21,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const contact = await prisma.contact.create({
-    data: { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes },
+    data: { userId: user.id, firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes },
   });
   return NextResponse.json(contact, { status: 201 });
 }

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { NotificationBell } from "@/components/NotificationBell";
+import { createClient } from "@/lib/supabase/client";
 
 interface CalendarShare {
   id: string;
@@ -34,6 +35,7 @@ function SectionHeader({ label }: { label: string }) {
 }
 
 export default function SettingsPage() {
+  const supabase = createClient();
   const [shares, setShares] = useState<CalendarShare[]>([]);
   const [newLabel, setNewLabel] = useState("");
   const [creating, setCreating] = useState(false);
@@ -286,6 +288,23 @@ export default function SettingsPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <Separator className="mb-6 mt-6" />
+
+      {/* Account */}
+      <section className="mb-6">
+        <SectionHeader label="account" />
+        <Button
+          variant="outline"
+          onClick={async () => {
+            await supabase.auth.signOut();
+            window.location.href = "/login";
+          }}
+          style={{ borderRadius: "8px" }}
+        >
+          Sign out
+        </Button>
       </section>
     </div>
   );

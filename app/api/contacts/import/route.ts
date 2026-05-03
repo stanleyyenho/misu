@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseVcf } from "@/lib/vcf";
+import { getUser } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
 
@@ -23,6 +27,7 @@ export async function POST(request: Request) {
   for (const c of parsed) {
     const existing = await prisma.contact.findFirst({
       where: {
+        userId: user.id,
         firstName: c.firstName,
         lastName: c.lastName ?? null,
         phone: c.phone ?? null,
@@ -36,6 +41,7 @@ export async function POST(request: Request) {
 
     await prisma.contact.create({
       data: {
+        userId: user.id,
         firstName: c.firstName,
         lastName: c.lastName,
         email: c.email,

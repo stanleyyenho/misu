@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 import { addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "@/lib/supabase/server";
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id: contactId } = await params;
+  const owned = await prisma.contact.findFirst({ where: { id: contactId, userId: user.id } });
+  if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   const body = await request.json();
   const {
     frequencyDays,
@@ -56,7 +63,12 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id: contactId } = await params;
+  const owned = await prisma.contact.findFirst({ where: { id: contactId, userId: user.id } });
+  if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await prisma.checkInSchedule.update({
     where: { contactId },

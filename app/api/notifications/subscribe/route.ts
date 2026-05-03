@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = await request.json();
   const { endpoint, keys } = body;
 
@@ -11,8 +15,8 @@ export async function POST(request: Request) {
 
   await prisma.notificationSubscription.upsert({
     where: { endpoint },
-    create: { endpoint, keys: JSON.stringify(keys) },
-    update: { keys: JSON.stringify(keys) },
+    create: { userId: user.id, endpoint, keys: JSON.stringify(keys) },
+    update: { userId: user.id, keys: JSON.stringify(keys) },
   });
 
   return NextResponse.json({ success: true });
