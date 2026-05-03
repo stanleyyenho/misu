@@ -1,4 +1,4 @@
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -6,9 +6,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: env("DATABASE_URL"),
-    // directUrl is used by Prisma migrations to bypass the connection pooler (Supabase PgBouncer)
-    // Uncomment and set DIRECT_URL in .env.local when running migrations
-    // directUrl: env("DIRECT_URL"),
+    // prisma/config's env() throws at load time if the var is missing, which breaks
+    // `prisma generate` during Vercel's install step. Use process.env with a fallback
+    // so generate succeeds at build time; the real URL is always present at runtime.
+    url: process.env.DATABASE_URL ?? "postgresql://localhost:5432/placeholder",
   },
 });
