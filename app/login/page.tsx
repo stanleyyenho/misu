@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailOtp, setEmailOtp] = useState("");
   const [phoneTipVisible, setPhoneTipVisible] = useState(false);
   const [phoneHovered, setPhoneHovered] = useState(false);
 
@@ -43,6 +44,19 @@ export default function LoginPage() {
     setLoading(false);
     if (error) { setError(error.message); return; }
     setPhase("verify");
+  }
+
+  async function verifyEmailOtp() {
+    setLoading(true);
+    setError("");
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: emailOtp,
+      type: "email",
+    });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    window.location.href = "/";
   }
 
   async function verifyOtp() {
@@ -152,15 +166,49 @@ export default function LoginPage() {
           )}
 
           {method === "email" && phase === "sent" && (
-            <div className="text-center space-y-3">
-              <div className="text-3xl">📬</div>
-              <p className="font-bold">Check your inbox</p>
-              <p className="text-sm text-muted-foreground">
-                We sent a magic link to <strong>{email}</strong>. Click it to sign in.
-              </p>
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <div className="text-3xl">📬</div>
+                <p className="font-bold">Check your inbox</p>
+                <p className="text-sm text-muted-foreground">
+                  We sent an email to <strong>{email}</strong>. Click the link to sign in, or enter the 6-digit code below.
+                </p>
+              </div>
+
+              <div className="relative flex items-center gap-2">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">or enter code</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              <div className="space-y-3">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={emailOtp}
+                  onChange={(e) => { setEmailOtp(e.target.value.replace(/\D/g, "")); setError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && verifyEmailOtp()}
+                  placeholder="000000"
+                  className="text-center text-xl tracking-[0.4em] font-mono"
+                  style={{ borderRadius: "8px" }}
+                  autoFocus
+                />
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <Button
+                  onClick={verifyEmailOtp}
+                  disabled={loading || emailOtp.length < 6}
+                  className="w-full"
+                  style={{ borderRadius: "8px" }}
+                >
+                  {loading ? "Verifying..." : "Sign in"}
+                </Button>
+              </div>
+
               <button
-                className="text-xs text-muted-foreground underline"
-                onClick={() => setPhase("input")}
+                className="w-full text-xs text-muted-foreground underline"
+                onClick={() => { setPhase("input"); setEmailOtp(""); setError(""); }}
               >
                 Use a different email
               </button>
