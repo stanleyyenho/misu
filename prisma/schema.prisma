@@ -7,42 +7,84 @@ datasource db {
 }
 
 model Contact {
-  id        String           @id @default(cuid())
-  firstName String
-  lastName  String?
-  email     String?
-  phone     String?
-  avatarUrl String?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  schedule  CheckInSchedule?
-  checkIns  CheckIn[]
+  id                String               @id @default(cuid())
+  firstName         String
+  lastName          String?
+  email             String?
+  phone             String?
+  avatarUrl         String?
+  // Primary messaging delivery channel for this contact
+  messagingPlatform String?              // sms | imessage | whatsapp | instagram | messenger
+  // Context notes fed into AI message generation
+  notes             String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  schedule          CheckInSchedule?
+  checkIns          CheckIn[]
+  messageLogs       MessageLog[]
+  groups            ContactGroupMember[]
+}
+
+model ContactGroup {
+  id        String               @id @default(cuid())
+  name      String
+  createdAt DateTime             @default(now())
+  members   ContactGroupMember[]
+}
+
+model ContactGroupMember {
+  contactId String
+  groupId   String
+  contact   Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  group     ContactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([contactId, groupId])
 }
 
 model CheckInSchedule {
-  id             String    @id @default(cuid())
-  contactId      String    @unique
-  contact        Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  frequencyDays  Int
-  catchupFormats String    // JSON array stored as string: ["zoom","facetime","in-person"]
-  nextCheckIn    DateTime
-  lastCheckIn    DateTime?
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  contactId        String    @unique
+  contact          Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  frequencyDays    Int
+  catchupFormats   String    // JSON array: ["zoom","facetime","in-person"]
+  // AI generation config
+  tone             String    @default("casual")  // casual | warm | formal | playful
+  checkInType      String    @default("generic") // generic | hangout-prompt
+  approveBeforeSend Boolean  @default(true)
+  nextCheckIn      DateTime
+  lastCheckIn      DateTime?
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model CheckIn {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   contactId   String
-  contact     Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contact     Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
   scheduledAt DateTime
   completedAt DateTime?
   format      String?
   notes       String?
-  status      String    @default("pending") // pending | completed | skipped
+  status      String       @default("pending") // pending | completed | skipped
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  messageLog  MessageLog?
+}
+
+// Tracks every AI-generated message: draft, sent, or delivered
+model MessageLog {
+  id          String    @id @default(cuid())
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  checkInId   String?   @unique
+  checkIn     CheckIn?  @relation(fields: [checkInId], references: [id], onDelete: SetNull)
+  platform    String    // sms | imessage | whatsapp | instagram | messenger
+  tone        String    // casual | warm | formal | playful
+  message     String
+  status      String    @default("draft") // draft | sent | delivered
+  sentAt      DateTime?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
 }
 
 model CalendarShare {

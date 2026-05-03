@@ -20,11 +20,25 @@ export async function PUT(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const { firstName, lastName, email, phone, avatarUrl } = body;
+  const { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes } = body;
 
   const contact = await prisma.contact.update({
     where: { id },
-    data: { firstName, lastName, email, phone, avatarUrl },
+    data: { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes },
+  });
+  return NextResponse.json(contact);
+}
+
+// Partial update — e.g. just notes or messagingPlatform
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const body = await request.json();
+  const contact = await prisma.contact.update({
+    where: { id },
+    data: body,
   });
   return NextResponse.json(contact);
 }

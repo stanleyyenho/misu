@@ -8,13 +8,15 @@ export async function PUT(
 ) {
   const { id: contactId } = await params;
   const body = await request.json();
-  const { frequencyDays, catchupFormats } = body;
+  const {
+    frequencyDays,
+    tone = "casual",
+    checkInType = "generic",
+    approveBeforeSend = true,
+  } = body;
 
-  if (!frequencyDays || !Array.isArray(catchupFormats)) {
-    return NextResponse.json(
-      { error: "frequencyDays and catchupFormats are required" },
-      { status: 400 }
-    );
+  if (!frequencyDays) {
+    return NextResponse.json({ error: "frequencyDays is required" }, { status: 400 });
   }
 
   const nextCheckIn = addDays(new Date(), frequencyDays);
@@ -24,23 +26,25 @@ export async function PUT(
     create: {
       contactId,
       frequencyDays,
-      catchupFormats: JSON.stringify(catchupFormats),
+      catchupFormats: "[]",
+      tone,
+      checkInType,
+      approveBeforeSend,
       nextCheckIn,
       isActive: true,
     },
     update: {
       frequencyDays,
-      catchupFormats: JSON.stringify(catchupFormats),
+      tone,
+      checkInType,
+      approveBeforeSend,
       nextCheckIn,
       isActive: true,
     },
   });
 
-  // Delete any existing pending check-ins and create a fresh one
-  await prisma.checkIn.deleteMany({
-    where: { contactId, status: "pending" },
-  });
-
+  // Replace any pending check-in with the new schedule
+  await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
   await prisma.checkIn.create({
     data: { contactId, scheduledAt: nextCheckIn, status: "pending" },
   });
@@ -59,9 +63,7 @@ export async function DELETE(
     data: { isActive: false },
   });
 
-  await prisma.checkIn.deleteMany({
-    where: { contactId, status: "pending" },
-  });
+  await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
 
   return NextResponse.json({ success: true });
 }

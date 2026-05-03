@@ -5,16 +5,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-
-const CATCHUP_FORMATS = [
-  { id: "zoom", label: "Zoom" },
-  { id: "facetime", label: "FaceTime" },
-  { id: "in-person", label: "In Person" },
-  { id: "phone", label: "Phone Call" },
-  { id: "whatsapp", label: "WhatsApp" },
-  { id: "text", label: "Text Message" },
-];
 
 const FREQUENCY_PRESETS = [
   { label: "1 week", days: 7 },
@@ -24,51 +14,108 @@ const FREQUENCY_PRESETS = [
   { label: "6 months", days: 180 },
 ];
 
+const PLATFORMS = [
+  { id: "imessage", label: "iMessage" },
+  { id: "sms", label: "SMS" },
+  { id: "whatsapp", label: "WhatsApp" },
+  { id: "instagram", label: "Instagram" },
+  { id: "messenger", label: "Messenger" },
+];
+
+const TONES = [
+  { id: "casual", label: "Casual" },
+  { id: "warm", label: "Warm" },
+  { id: "formal", label: "Formal" },
+  { id: "playful", label: "Playful" },
+];
+
 interface Props {
   contactId: string;
+  contactPhone?: string | null;
+  contactPlatform?: string | null;
   initialFrequencyDays?: number;
-  initialFormats?: string[];
+  initialTone?: string;
+  initialCheckInType?: string;
+  initialApproveBeforeSend?: boolean;
   onSaved?: () => void;
+}
+
+function PillButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
+      style={{
+        borderRadius: "8px",
+        backgroundColor: active ? "#1F2024" : "transparent",
+        color: active ? "#FFFFFF" : "#1F2024",
+        boxShadow: active ? "2px 2px 0 #1F2024" : "none",
+      }}
+    >
+      {children}
+    </button>
+  );
 }
 
 export function ScheduleForm({
   contactId,
+  contactPhone,
+  contactPlatform,
   initialFrequencyDays,
-  initialFormats = [],
+  initialTone = "casual",
+  initialCheckInType = "generic",
+  initialApproveBeforeSend = true,
   onSaved,
 }: Props) {
   const [frequencyDays, setFrequencyDays] = useState<number | "">(
     initialFrequencyDays ?? ""
   );
-  const [selectedFormats, setSelectedFormats] = useState<string[]>(initialFormats);
+  const [platform, setPlatform] = useState(contactPlatform ?? "");
+  const [tone, setTone] = useState(initialTone);
+  const [checkInType, setCheckInType] = useState(initialCheckInType);
+  const [approveBeforeSend, setApproveBeforeSend] = useState(initialApproveBeforeSend);
   const [saving, setSaving] = useState(false);
 
-  function toggleFormat(id: string) {
-    setSelectedFormats((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-    );
-  }
-
   async function handleSave() {
-    if (!frequencyDays || selectedFormats.length === 0) {
-      toast.error("Please set a frequency and at least one catchup format");
+    if (!frequencyDays) {
+      toast.error("Please set a check-in frequency");
       return;
     }
     setSaving(true);
     try {
+      // Update the contact's messaging platform if changed
+      if (platform !== contactPlatform) {
+        await fetch(`/api/contacts/${contactId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messagingPlatform: platform || null }),
+        });
+      }
+
       const res = await fetch(`/api/contacts/${contactId}/schedule`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           frequencyDays: Number(frequencyDays),
-          catchupFormats: selectedFormats,
+          tone,
+          checkInType,
+          approveBeforeSend,
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
-      toast.success("Schedule saved!");
+      toast.success("Cadence saved!");
       onSaved?.();
     } catch {
-      toast.error("Failed to save schedule");
+      toast.error("Failed to save cadence");
     } finally {
       setSaving(false);
     }
@@ -78,9 +125,8 @@ export function ScheduleForm({
     setSaving(true);
     try {
       await fetch(`/api/contacts/${contactId}/schedule`, { method: "DELETE" });
-      toast.info("Schedule removed");
+      toast.info("Cadence removed");
       setFrequencyDays("");
-      setSelectedFormats([]);
       onSaved?.();
     } finally {
       setSaving(false);
@@ -88,29 +134,26 @@ export function ScheduleForm({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Frequency */}
       <div>
-        <Label className="mb-2 block">Check-in frequency</Label>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Check-in frequency</Label>
         <div className="flex flex-wrap gap-2 mb-3">
           {FREQUENCY_PRESETS.map((p) => (
-            <button
+            <PillButton
               key={p.days}
+              active={frequencyDays === p.days}
               onClick={() => setFrequencyDays(p.days)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                frequencyDays === p.days
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border hover:bg-accent"
-              }`}
             >
               {p.label}
-            </button>
+            </PillButton>
           ))}
         </div>
         <div className="flex items-center gap-2">
           <Input
             type="number"
             min={1}
-            placeholder="Custom days"
+            placeholder="Custom"
             value={
               frequencyDays !== "" &&
               !FREQUENCY_PRESETS.some((p) => p.days === frequencyDays)
@@ -120,52 +163,118 @@ export function ScheduleForm({
             onChange={(e) =>
               setFrequencyDays(e.target.value ? Number(e.target.value) : "")
             }
-            className="w-36"
+            className="w-24"
+            style={{ borderRadius: "8px" }}
           />
           <span className="text-sm text-muted-foreground">days</span>
         </div>
-        {frequencyDays && (
-          <p className="text-sm text-muted-foreground mt-1">
-            Every {frequencyDays} day{Number(frequencyDays) !== 1 ? "s" : ""}
+      </div>
+
+      {/* Messaging platform */}
+      <div>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Send via</Label>
+        <div className="flex flex-wrap gap-2">
+          {PLATFORMS.map((p) => (
+            <PillButton
+              key={p.id}
+              active={platform === p.id}
+              onClick={() => setPlatform(platform === p.id ? "" : p.id)}
+            >
+              {p.label}
+            </PillButton>
+          ))}
+        </div>
+        {!contactPhone && platform === "sms" && (
+          <p className="text-xs text-[var(--destructive)] mt-1.5 font-semibold">
+            Add a phone number to this contact to use SMS
           </p>
         )}
       </div>
 
+      {/* Message tone */}
       <div>
-        <Label className="mb-2 block">Catchup formats</Label>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Message tone</Label>
         <div className="flex flex-wrap gap-2">
-          {CATCHUP_FORMATS.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => toggleFormat(f.id)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                selectedFormats.includes(f.id)
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border hover:bg-accent"
-              }`}
+          {TONES.map((t) => (
+            <PillButton
+              key={t.id}
+              active={tone === t.id}
+              onClick={() => setTone(t.id)}
             >
-              {f.label}
-            </button>
+              {t.label}
+            </PillButton>
           ))}
         </div>
-        {selectedFormats.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {selectedFormats.map((f) => (
-              <Badge key={f} variant="secondary" className="text-xs">
-                {CATCHUP_FORMATS.find((c) => c.id === f)?.label ?? f}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Controls how the AI writes your check-in messages
+        </p>
       </div>
 
-      <div className="flex gap-2">
-        <Button onClick={handleSave} disabled={saving}>
-          {initialFrequencyDays ? "Update schedule" : "Set schedule"}
+      {/* Check-in type */}
+      <div>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Check-in type</Label>
+        <div className="flex flex-wrap gap-2">
+          <PillButton
+            active={checkInType === "generic"}
+            onClick={() => setCheckInType("generic")}
+          >
+            Generic
+          </PillButton>
+          <PillButton
+            active={checkInType === "hangout-prompt"}
+            onClick={() => setCheckInType("hangout-prompt")}
+          >
+            Hangout prompt
+          </PillButton>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          {checkInType === "generic"
+            ? '"How have you been?" style messages'
+            : '"We need to hang soon" style messages with venue suggestions'}
+        </p>
+      </div>
+
+      {/* Approve before send */}
+      <div>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Delivery mode</Label>
+        <div className="flex flex-wrap gap-2">
+          <PillButton
+            active={approveBeforeSend}
+            onClick={() => setApproveBeforeSend(true)}
+          >
+            Review before send
+          </PillButton>
+          <PillButton
+            active={!approveBeforeSend}
+            onClick={() => setApproveBeforeSend(false)}
+          >
+            Auto-send
+          </PillButton>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          {approveBeforeSend
+            ? "You'll get a notification to review the message before it sends"
+            : "SMS messages send automatically (requires Twilio)"}
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
+        <Button
+          onClick={handleSave}
+          disabled={saving || !frequencyDays}
+          style={{ borderRadius: "8px" }}
+        >
+          {saving ? "Saving..." : initialFrequencyDays ? "Update cadence" : "Set cadence"}
         </Button>
         {initialFrequencyDays && (
-          <Button variant="outline" onClick={handleRemove} disabled={saving}>
-            Remove schedule
+          <Button
+            variant="outline"
+            onClick={handleRemove}
+            disabled={saving}
+            style={{ borderRadius: "8px" }}
+          >
+            Remove
           </Button>
         )}
       </div>

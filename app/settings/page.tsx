@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { NotificationBell } from "@/components/NotificationBell";
 
 interface CalendarShare {
@@ -15,16 +16,42 @@ interface CalendarShare {
   createdAt: string;
 }
 
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <p
+      className="mb-3"
+      style={{
+        fontFamily: "var(--font-pixel-display)",
+        fontSize: "11px",
+        letterSpacing: "0.12em",
+        textTransform: "uppercase",
+        color: "var(--muted-foreground)",
+      }}
+    >
+      {label}
+    </p>
+  );
+}
+
 export default function SettingsPage() {
   const [shares, setShares] = useState<CalendarShare[]>([]);
   const [newLabel, setNewLabel] = useState("");
   const [creating, setCreating] = useState(false);
   const [notifGranted, setNotifGranted] = useState(false);
 
+  // Style calibration state (stored locally for now — future: persist to user profile)
+  const [sampleTexts, setSampleTexts] = useState(
+    typeof window !== "undefined"
+      ? localStorage.getItem("misu_sample_texts") ?? ""
+      : ""
+  );
+  const [savingSamples, setSavingSamples] = useState(false);
+
   useEffect(() => {
     loadShares();
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setNotifGranted(Notification.permission === "granted");
+    if (typeof window !== "undefined") {
+      if ("Notification" in window) setNotifGranted(Notification.permission === "granted");
+      setSampleTexts(localStorage.getItem("misu_sample_texts") ?? "");
     }
   }, []);
 
@@ -64,31 +91,108 @@ export default function SettingsPage() {
     return `${window.location.origin}/api/calendar/${token}`;
   }
 
-  function copyUrl(token: string) {
-    navigator.clipboard.writeText(getIcalUrl(token));
-    toast.success("Copied!");
+  function saveSampleTexts() {
+    setSavingSamples(true);
+    localStorage.setItem("misu_sample_texts", sampleTexts);
+    setTimeout(() => {
+      setSavingSamples(false);
+      toast.success("Voice samples saved!");
+    }, 300);
   }
 
   return (
-    <div className="max-w-xl mx-auto p-4 md:p-6">
-      <h1 className="text-xl md:text-2xl font-bold mb-1">Settings</h1>
-      <p className="text-sm text-muted-foreground mb-6">
-        Notifications and calendar sharing
+    <div className="max-w-[480px] mx-auto px-4 pt-5 pb-24 md:pb-6">
+      <p
+        style={{
+          fontFamily: "var(--font-pixel-display)",
+          fontSize: "11px",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "var(--muted-foreground)",
+        }}
+      >
+        preferences
       </p>
+      <h1 className="text-xl font-semibold mt-0.5 mb-6" style={{ fontFamily: "var(--font-script)" }}>
+        settings
+      </h1>
+
+      {/* Voice calibration */}
+      <section className="mb-6">
+        <SectionHeader label="message voice" />
+        <p className="text-sm text-muted-foreground mb-3">
+          Paste a few real texts you&apos;ve sent to friends. misu uses these as examples to match your writing style when generating messages.
+        </p>
+        <Textarea
+          value={sampleTexts}
+          onChange={(e) => setSampleTexts(e.target.value)}
+          placeholder={`e.g.\n"yo what are you up to this weekend"\n"dude we literally need to hang, it's been forever"\n"just saw something that reminded me of you lol"`}
+          rows={6}
+          style={{ borderRadius: "8px" }}
+        />
+        <Button
+          size="sm"
+          onClick={saveSampleTexts}
+          disabled={savingSamples}
+          className="mt-2"
+          style={{ borderRadius: "8px" }}
+        >
+          {savingSamples ? "Saving..." : "Save samples"}
+        </Button>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Stored locally on your device — never sent to our servers
+        </p>
+      </section>
+
+      <Separator className="mb-6" />
+
+      {/* Messaging platforms */}
+      <section className="mb-6">
+        <SectionHeader label="messaging platforms" />
+        <div
+          className="rounded-[10px] border-2 border-[#1F2024] p-4 bg-secondary/30"
+          style={{ boxShadow: "3px 3px 0 #1F2024" }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="mt-0.5 h-5 w-5 rounded border-2 border-[#1F2024] bg-[var(--splash-mint)] flex items-center justify-center shrink-0"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth={3} strokeLinecap="round">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-bold">Deep link delivery active</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                iMessage, WhatsApp, Instagram, and Messenger are delivered via deep link — misu opens the app with your message pre-loaded.
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#DEDEDE]">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">SMS auto-send</p>
+            <p className="text-sm text-muted-foreground">
+              SMS messages can be sent automatically via Twilio. Set{" "}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded font-mono">TWILIO_*</code>{" "}
+              env vars to enable.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <Separator className="mb-6" />
 
       {/* Notifications */}
       <section className="mb-6">
-        <h2 className="text-base font-semibold mb-1">Push notifications</h2>
+        <SectionHeader label="push notifications" />
         <p className="text-sm text-muted-foreground mb-3">
-          Get reminded at 8am on the day of each scheduled check-in.
-          {" "}
-          <span className="font-medium text-foreground">
-            On iPhone, add Misu to your home screen first.
+          Get notified when it&apos;s time to send a check-in.{" "}
+          <span className="font-semibold text-foreground">
+            On iPhone, add misu to your home screen first.
           </span>
         </p>
 
         {notifGranted ? (
-          <p className="text-sm text-green-600 font-medium flex items-center gap-1.5">
+          <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: "var(--splash-mint)" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <path d="M20 6L9 17l-5-5" />
             </svg>
@@ -98,16 +202,18 @@ export default function SettingsPage() {
           <NotificationBell />
         )}
 
-        <div className="mt-4 rounded-lg border bg-muted/30 p-3 text-sm space-y-1">
-          <p className="font-medium text-xs uppercase tracking-wide text-muted-foreground">How to add to iPhone home screen</p>
+        <div
+          className="mt-4 rounded-[8px] border-2 border-[#DEDEDE] p-3 text-sm space-y-1"
+        >
+          <p className="font-bold text-xs uppercase tracking-wide text-muted-foreground">How to add to iPhone home screen</p>
           <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-sm">
             <li>Open this page in Safari</li>
             <li>Tap the Share button (box with arrow)</li>
             <li>Tap &ldquo;Add to Home Screen&rdquo;</li>
-            <li>Open the app from home screen, then tap &ldquo;Enable notifications&rdquo;</li>
+            <li>Open the app from home screen, then enable notifications</li>
           </ol>
           <p className="text-xs text-muted-foreground pt-1">
-            Requires iOS 16.4+ and Safari. Push notifications only work when added to the home screen.
+            Requires iOS 16.4+ and Safari.
           </p>
         </div>
       </section>
@@ -116,9 +222,9 @@ export default function SettingsPage() {
 
       {/* Calendar sharing */}
       <section>
-        <h2 className="text-base font-semibold mb-1">Shareable calendar</h2>
+        <SectionHeader label="calendar sharing" />
         <p className="text-sm text-muted-foreground mb-4">
-          Generates an iCal URL you can subscribe to in Google Calendar, Apple Calendar, or Outlook.
+          Subscribe to your check-in schedule in Google Calendar, Apple Calendar, or Outlook via iCal URL.
         </p>
 
         <div className="flex gap-2 mb-5">
@@ -127,8 +233,14 @@ export default function SettingsPage() {
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createShare()}
+            style={{ borderRadius: "8px" }}
           />
-          <Button onClick={createShare} disabled={creating} className="shrink-0">
+          <Button
+            onClick={createShare}
+            disabled={creating}
+            className="shrink-0"
+            style={{ borderRadius: "8px" }}
+          >
             Create
           </Button>
         </div>
@@ -138,27 +250,38 @@ export default function SettingsPage() {
         ) : (
           <ul className="space-y-3">
             {shares.map((s) => (
-              <li key={s.id} className="rounded-lg border p-3">
+              <li
+                key={s.id}
+                className="rounded-[8px] border-2 border-[#1F2024] p-3"
+                style={{ boxShadow: "2px 2px 0 #1F2024" }}
+              >
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-sm">{s.label}</p>
+                  <p className="font-bold text-sm">{s.label}</p>
                   <button
                     onClick={() => deleteShare(s.id)}
-                    className="text-xs text-destructive hover:underline"
+                    className="text-xs font-semibold"
+                    style={{ color: "var(--destructive)" }}
                   >
                     Remove
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <code className="text-xs bg-muted px-2 py-1.5 rounded flex-1 truncate">
+                  <code className="text-xs bg-muted px-2 py-1.5 rounded flex-1 truncate font-mono">
                     {typeof window !== "undefined" ? getIcalUrl(s.token) : ""}
                   </code>
-                  <Button size="sm" variant="outline" onClick={() => copyUrl(s.token)} className="shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(getIcalUrl(s.token));
+                      toast.success("Copied!");
+                    }}
+                    className="shrink-0"
+                    style={{ borderRadius: "8px" }}
+                  >
                     Copy
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Google Calendar: Other calendars (+) → From URL → paste above
-                </p>
               </li>
             ))}
           </ul>

@@ -48,13 +48,13 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Misu — Stay in touch",
-  description: "Reminder app to check in with the people who matter",
+  title: "misu — stay in touch",
+  description: "Relationship maintenance — stay meaningfully connected with the people who matter",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Misu",
+    title: "misu",
   },
   icons: {
     apple: "/icon-192.png",

@@ -1,11 +1,11 @@
 {
-  "name": "Misu — Stay in touch",
-  "short_name": "Misu",
-  "description": "Reminder app to check in with the people who matter",
+  "name": "misu — stay in touch",
+  "short_name": "misu",
+  "description": "Relationship maintenance — stay meaningfully connected with the people who matter",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0a0a0a",
+  "background_color": "#FAFAFA",
+  "theme_color": "#FAFAFA",
   "orientation": "portrait",
   "icons": [
     {
