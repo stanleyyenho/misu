@@ -75,7 +75,8 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(profile);
   } catch (err) {
-    console.error("[PUT /api/profile]", err);
-    return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[PUT /api/profile]", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
