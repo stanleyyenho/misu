@@ -17,6 +17,13 @@ interface CalendarShare {
   createdAt: string;
 }
 
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
 function SectionHeader({ label }: { label: string }) {
   return (
     <p
@@ -41,6 +48,10 @@ export default function SettingsPage() {
   const [creating, setCreating] = useState(false);
   const [notifGranted, setNotifGranted] = useState(false);
 
+  // Profile state
+  const [profile, setProfile] = useState<UserProfile>({ firstName: "", lastName: "", email: "", phone: "" });
+  const [savingProfile, setSavingProfile] = useState(false);
+
   // Style calibration state (stored locally for now — future: persist to user profile)
   const [sampleTexts, setSampleTexts] = useState(
     typeof window !== "undefined"
@@ -51,11 +62,38 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadShares();
+    loadProfile();
     if (typeof window !== "undefined") {
       if ("Notification" in window) setNotifGranted(Notification.permission === "granted");
       setSampleTexts(localStorage.getItem("misu_sample_texts") ?? "");
     }
   }, []);
+
+  async function loadProfile() {
+    const res = await fetch("/api/profile");
+    if (res.ok) {
+      const data = await res.json();
+      if (data) setProfile({ firstName: data.firstName ?? "", lastName: data.lastName ?? "", email: data.email ?? "", phone: data.phone ?? "" });
+    }
+  }
+
+  async function saveProfile() {
+    if (!profile.firstName.trim()) { toast.error("First name is required"); return; }
+    setSavingProfile(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Profile saved!");
+    } catch {
+      toast.error("Failed to save profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
 
   async function loadShares() {
     const res = await fetch("/api/calendar/share");
@@ -118,6 +156,72 @@ export default function SettingsPage() {
       <h1 className="text-xl font-semibold mt-0.5 mb-6" style={{ fontFamily: "var(--font-script)" }}>
         settings
       </h1>
+
+      {/* Profile */}
+      <section className="mb-6">
+        <SectionHeader label="your profile" />
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <Label htmlFor="firstName" className="text-sm font-semibold">First name *</Label>
+              <Input
+                id="firstName"
+                value={profile.firstName}
+                onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))}
+                placeholder="Alex"
+                className="mt-1.5"
+                style={{ borderRadius: "8px" }}
+              />
+            </div>
+            <div className="flex-1">
+              <Label htmlFor="lastName" className="text-sm font-semibold">Last name</Label>
+              <Input
+                id="lastName"
+                value={profile.lastName}
+                onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))}
+                placeholder="Johnson"
+                className="mt-1.5"
+                style={{ borderRadius: "8px" }}
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="profileEmail" className="text-sm font-semibold">Email</Label>
+            <Input
+              id="profileEmail"
+              type="email"
+              value={profile.email}
+              onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
+              placeholder="you@example.com"
+              className="mt-1.5"
+              style={{ borderRadius: "8px" }}
+            />
+          </div>
+          <div>
+            <Label htmlFor="profilePhone" className="text-sm font-semibold">Phone number</Label>
+            <Input
+              id="profilePhone"
+              type="tel"
+              value={profile.phone}
+              onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
+              placeholder="+1 (555) 000-0000"
+              className="mt-1.5"
+              style={{ borderRadius: "8px" }}
+            />
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={saveProfile}
+          disabled={savingProfile}
+          className="mt-3"
+          style={{ borderRadius: "8px" }}
+        >
+          {savingProfile ? "Saving..." : "Save profile"}
+        </Button>
+      </section>
+
+      <Separator className="mb-6" />
 
       {/* Voice calibration */}
       <section className="mb-6">

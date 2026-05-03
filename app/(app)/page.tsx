@@ -76,20 +76,24 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState<RecentActivity[]>([]);
   const [activeCheckIn, setActiveCheckIn] = useState<UpcomingCheckIn | null>(null);
   const [loading, setLoading] = useState(true);
+  const [firstName, setFirstName] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
     try {
-      const [upcomingRes, recentRes] = await Promise.all([
+      const [upcomingRes, recentRes, profileRes] = await Promise.all([
         fetch("/api/checkins?status=pending&days=14"),
         fetch("/api/checkins?status=completed&limit=5"),
+        fetch("/api/profile"),
       ]);
-      const [upcomingData, recentData] = await Promise.all([
+      const [upcomingData, recentData, profileData] = await Promise.all([
         upcomingRes.json(),
         recentRes.json(),
+        profileRes.ok ? profileRes.json() : null,
       ]);
       setUpcoming(Array.isArray(upcomingData) ? upcomingData : []);
       setRecent(Array.isArray(recentData) ? recentData : []);
+      setFirstName(profileData?.firstName ?? null);
     } catch {
       toast.error("Failed to load check-ins");
     } finally {
@@ -118,7 +122,7 @@ export default function DashboardPage() {
           className="text-2xl font-semibold mt-0.5"
           style={{ fontFamily: "var(--font-script)" }}
         >
-          who do you want to reach out to?
+          {firstName ? `Hi ${firstName}! ` : ""}who do you want to check in with?
         </h1>
       </div>
 
