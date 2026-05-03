@@ -32,10 +32,26 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Serve marketing homepage on misu.care (root domain)
+  const host = request.headers.get("host") ?? "";
+  const isMarketingDomain =
+    host === "misu.care" || host === "www.misu.care";
+
+  if (isMarketingDomain) {
+    if (pathname === "/" || pathname === "") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/marketing";
+      return NextResponse.rewrite(url);
+    }
+    // Redirect all other paths on misu.care to app.misu.care
+    return NextResponse.redirect(`https://app.misu.care${pathname}`);
+  }
+
   // Allow unauthenticated access to login, auth callback, and public assets
   const isPublic =
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth/") ||
+    pathname.startsWith("/marketing") ||
     pathname.startsWith("/api/calendar/") || // public iCal URLs
     pathname.startsWith("/api/notifications/vapid-public-key") ||
     pathname.startsWith("/api/cron/");
