@@ -17,6 +17,7 @@ export async function PUT(
   const body = await request.json();
   const {
     frequencyDays,
+    frequencyJitterDays = 0,
     tone = "casual",
     checkInType = "generic",
     approveBeforeSend = true,
@@ -26,13 +27,16 @@ export async function PUT(
     return NextResponse.json({ error: "frequencyDays is required" }, { status: 400 });
   }
 
-  const nextCheckIn = addDays(new Date(), frequencyDays);
+  const jitter = Math.min(Number(frequencyJitterDays), Math.floor(Number(frequencyDays) / 2));
+  const jitterOffset = jitter > 0 ? Math.floor(Math.random() * (jitter * 2 + 1)) - jitter : 0;
+  const nextCheckIn = addDays(new Date(), Number(frequencyDays) + jitterOffset);
 
   const schedule = await prisma.checkInSchedule.upsert({
     where: { contactId },
     create: {
       contactId,
       frequencyDays,
+      frequencyJitterDays: jitter,
       catchupFormats: "[]",
       tone,
       checkInType,
@@ -42,6 +46,7 @@ export async function PUT(
     },
     update: {
       frequencyDays,
+      frequencyJitterDays: jitter,
       tone,
       checkInType,
       approveBeforeSend,

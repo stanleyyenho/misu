@@ -48,6 +48,7 @@ model CheckInSchedule {
   contactId        String    @unique
   contact          Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
   frequencyDays    Int
+  frequencyJitterDays Int @default(0)
   catchupFormats   String    // JSON array: ["zoom","facetime","in-person"]
   // AI generation config
   tone             String    @default("casual")  // casual | warm | formal | playful

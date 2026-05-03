@@ -14,6 +14,21 @@ const FREQUENCY_PRESETS = [
   { label: "6 months", days: 180 },
 ];
 
+const JITTER_PRESETS = [
+  { label: "none", days: 0 },
+  { label: "1 day", days: 1 },
+  { label: "2 days", days: 2 },
+  { label: "3 days", days: 3 },
+  { label: "1 week", days: 7 },
+  { label: "2 weeks", days: 14 },
+  { label: "1 month", days: 30 },
+];
+
+function maxJitter(frequencyDays: number | ""): number {
+  if (!frequencyDays) return 0;
+  return Math.floor(Number(frequencyDays) / 2);
+}
+
 const PLATFORMS = [
   { id: "imessage", label: "iMessage" },
   { id: "sms", label: "SMS" },
@@ -34,6 +49,7 @@ interface Props {
   contactPhone?: string | null;
   contactPlatform?: string | null;
   initialFrequencyDays?: number;
+  initialFrequencyJitterDays?: number;
   initialTone?: string;
   initialCheckInType?: string;
   initialApproveBeforeSend?: boolean;
@@ -71,6 +87,7 @@ export function ScheduleForm({
   contactPhone,
   contactPlatform,
   initialFrequencyDays,
+  initialFrequencyJitterDays = 0,
   initialTone = "casual",
   initialCheckInType = "generic",
   initialApproveBeforeSend = true,
@@ -78,6 +95,9 @@ export function ScheduleForm({
 }: Props) {
   const [frequencyDays, setFrequencyDays] = useState<number | "">(
     initialFrequencyDays ?? ""
+  );
+  const [frequencyJitterDays, setFrequencyJitterDays] = useState<number>(
+    initialFrequencyJitterDays
   );
   const [platform, setPlatform] = useState(contactPlatform ?? "");
   const [tone, setTone] = useState(initialTone);
@@ -101,11 +121,13 @@ export function ScheduleForm({
         });
       }
 
+      const clampedJitter = Math.min(frequencyJitterDays, maxJitter(frequencyDays));
       const res = await fetch(`/api/contacts/${contactId}/schedule`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           frequencyDays: Number(frequencyDays),
+          frequencyJitterDays: clampedJitter,
           tone,
           checkInType,
           approveBeforeSend,
@@ -143,7 +165,10 @@ export function ScheduleForm({
             <PillButton
               key={p.days}
               active={frequencyDays === p.days}
-              onClick={() => setFrequencyDays(p.days)}
+              onClick={() => {
+                setFrequencyDays(p.days);
+                setFrequencyJitterDays((j) => Math.min(j, maxJitter(p.days)));
+              }}
             >
               {p.label}
             </PillButton>
@@ -160,15 +185,38 @@ export function ScheduleForm({
                 ? frequencyDays
                 : ""
             }
-            onChange={(e) =>
-              setFrequencyDays(e.target.value ? Number(e.target.value) : "")
-            }
+            onChange={(e) => {
+              const val = e.target.value ? Number(e.target.value) : "";
+              setFrequencyDays(val);
+              if (val !== "") setFrequencyJitterDays((j) => Math.min(j, maxJitter(val)));
+            }}
             className="w-24"
             style={{ borderRadius: "8px" }}
           />
           <span className="text-sm text-muted-foreground">days</span>
         </div>
       </div>
+
+      {/* Jitter */}
+      {frequencyDays !== "" && maxJitter(frequencyDays) >= 1 && (
+        <div>
+          <Label className="mb-1 block text-xs font-bold uppercase tracking-wide">Give or take</Label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Misu will schedule each check-in randomly within this window to feel more natural
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {JITTER_PRESETS.filter((j) => j.days <= maxJitter(frequencyDays)).map((j) => (
+              <PillButton
+                key={j.days}
+                active={frequencyJitterDays === j.days}
+                onClick={() => setFrequencyJitterDays(j.days)}
+              >
+                {j.label}
+              </PillButton>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Messaging platform */}
       <div>

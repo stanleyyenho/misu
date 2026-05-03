@@ -55,6 +55,16 @@ const PLATFORM_COLORS: Record<string, string> = {
   messenger: "var(--splash-sky)",
 };
 
+function getGreeting(firstName: string | null): string {
+  const hour = new Date().getHours();
+  const time =
+    hour >= 5 && hour < 12 ? "good morning" :
+    hour >= 12 && hour < 17 ? "good afternoon" :
+    hour >= 17 && hour < 21 ? "good evening" :
+    "good night";
+  return firstName ? `${time}, ${firstName}!` : `${time}!`;
+}
+
 function dueDateLabel(dateStr: string) {
   const d = new Date(dateStr);
   if (isToday(d)) return "today";
@@ -122,7 +132,7 @@ export default function DashboardPage() {
           className="text-2xl font-semibold mt-0.5"
           style={{ fontFamily: "var(--font-script)" }}
         >
-          {firstName ? `Hi ${firstName}! ` : ""}who do you want to check in with?
+          {getGreeting(firstName)}{" "}who do you want to check in with?
         </h1>
       </div>
 

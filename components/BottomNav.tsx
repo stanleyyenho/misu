@@ -60,8 +60,8 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-[#1F2024] safe-area-bottom">
-      <div className="flex items-stretch">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-[#1F2024]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+      <div className="flex items-stretch pt-1">
         {tabs.map((tab) => {
           const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
           return (

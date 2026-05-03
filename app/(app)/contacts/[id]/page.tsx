@@ -33,6 +33,7 @@ interface Contact {
   notes: string | null;
   schedule: {
     frequencyDays: number;
+    frequencyJitterDays: number;
     tone: string;
     checkInType: string;
     approveBeforeSend: boolean;
@@ -210,6 +211,7 @@ export default function ContactDetailPage() {
             contactPhone={contact.phone}
             contactPlatform={contact.messagingPlatform}
             initialFrequencyDays={contact.schedule?.isActive ? contact.schedule.frequencyDays : undefined}
+            initialFrequencyJitterDays={contact.schedule?.isActive ? (contact.schedule.frequencyJitterDays ?? 0) : 0}
             initialTone={contact.schedule?.tone ?? "casual"}
             initialCheckInType={contact.schedule?.checkInType ?? "generic"}
             initialApproveBeforeSend={contact.schedule?.approveBeforeSend ?? true}

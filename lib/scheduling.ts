@@ -7,7 +7,9 @@ export async function createNextCheckIn(contactId: string): Promise<void> {
   });
   if (!schedule || !schedule.isActive) return;
 
-  const nextDate = addDays(new Date(), schedule.frequencyDays);
+  const jitter = schedule.frequencyJitterDays ?? 0;
+  const jitterOffset = jitter > 0 ? Math.floor(Math.random() * (jitter * 2 + 1)) - jitter : 0;
+  const nextDate = addDays(new Date(), schedule.frequencyDays + jitterOffset);
 
   await prisma.checkIn.create({
     data: {
