@@ -15,8 +15,9 @@ export async function GET() {
     const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
     return NextResponse.json(profile ?? null);
   } catch (err) {
-    console.error("[GET /api/profile]", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[GET /api/profile]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -75,7 +76,8 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(profile);
   } catch (err) {
-    console.error("[PUT /api/profile]", err instanceof Error ? err.message : err);
-    return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[PUT /api/profile]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
