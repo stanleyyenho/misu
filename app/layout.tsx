@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Nunito_Sans, Caveat } from "next/font/google";
+import { Nunito, Nunito_Sans, Caveat, Silkscreen, Space_Grotesk, Space_Mono, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
@@ -21,6 +21,30 @@ const caveat = Caveat({
   variable: "--font-caveat",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const silkscreen = Silkscreen({
+  variable: "--font-silkscreen",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -53,7 +77,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${nunito.variable} ${nunitoSans.variable} ${caveat.variable} antialiased`} style={{ fontFamily: "var(--font-nunito), sans-serif" }}>
+      <body className={`${nunito.variable} ${nunitoSans.variable} ${caveat.variable} ${silkscreen.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${bricolage.variable} antialiased`} style={{ fontFamily: "var(--font-space-grotesk), var(--font-nunito), sans-serif" }}>
         <div className="flex min-h-dvh">
           <SideNav />
           <main className="flex-1 overflow-auto pb-20 md:pb-0">

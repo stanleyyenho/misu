@@ -7,8 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-nunito);
-  --font-mono: var(--font-nunito-sans);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-space-mono);
+  --font-pixel-display: var(--font-silkscreen);
+  --font-script: var(--font-bricolage);
   --font-heading: var(--font-caveat);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -49,60 +51,79 @@
 }
 
 :root {
-  /* PicoChat-inspired: flat 2D, mostly black & white with color splashes */
+  /* Flat 2D, mostly black & white with color splashes */
   --background: #FAFAFA;
-  --foreground: #111111;
+  --foreground: #1F2024;
 
   --card: #FFFFFF;
-  --card-foreground: #111111;
+  --card-foreground: #1F2024;
 
   --popover: #FFFFFF;
-  --popover-foreground: #111111;
+  --popover-foreground: #1F2024;
 
-  /* PRIMARY — black */
-  --primary: #111111;
+  /* PRIMARY — ink */
+  --primary: #1F2024;
   --primary-foreground: #FFFFFF;
 
-  /* SECONDARY — light gray */
+  /* SECONDARY — paper gray */
   --secondary: #F0F0F0;
-  --secondary-foreground: #111111;
+  --secondary-foreground: #1F2024;
 
   /* MUTED */
   --muted: #E8E8E8;
   --muted-foreground: #666666;
 
-  /* ACCENT — yellow splash */
-  --accent: #FFE93E;
-  --accent-foreground: #111111;
+  /* ACCENT — calming sage green */
+  --accent: #BCE8DC;
+  --accent-foreground: #1F2024;
 
-  /* DESTRUCTIVE — bright red */
-  --destructive: #FF3A30;
+  /* DESTRUCTIVE */
+  --destructive: #FF6B5E;
+  --destructive-foreground: #FFFFFF;
 
   --border: #DEDEDE;
-  --input: #111111;
-  --ring: #FFE93E;
+  --input: #1F2024;
+  --ring: #BCE8DC;
 
-  --radius: 0.75rem;
+  --radius: 0.625rem; /* 10px default card radius */
 
   /* Hard shadow color (flips in dark mode) */
-  --shadow-hard: #111111;
+  --shadow-hard: #1F2024;
+
+  /* Hard offset shadows */
+  --shadow-1: 1px 1px 0 var(--shadow-hard);
+  --shadow-2: 2px 2px 0 var(--shadow-hard);
+  --shadow-3: 3px 3px 0 var(--shadow-hard);
+  --shadow-4: 4px 4px 0 var(--shadow-hard);
+  --shadow-6: 6px 6px 0 var(--shadow-hard);
 
   /* Sidebar */
   --sidebar: #F5F5F5;
-  --sidebar-foreground: #111111;
-  --sidebar-primary: #111111;
+  --sidebar-foreground: #1F2024;
+  --sidebar-primary: #1F2024;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #FFE93E;
-  --sidebar-accent-foreground: #111111;
+  --sidebar-accent-foreground: #1F2024;
   --sidebar-border: #DEDEDE;
-  --sidebar-ring: #FFE93E;
+  --sidebar-ring: #BCE8DC;
 
   /* Chart / color splashes */
-  --chart-1: #FFE93E;
-  --chart-2: #5BC4F5;
-  --chart-3: #FF6B9D;
-  --chart-4: #7EE8A2;
-  --chart-5: #FFB347;
+  --chart-1: #BCE8DC;  /* sage (accent) */
+  --chart-2: #5BC4F5;  /* sky */
+  --chart-3: #FF6B9D;  /* pink */
+  --chart-4: #7EE8A2;  /* mint */
+  --chart-5: #FFB347;  /* orange */
+
+  /* Named splash palette */
+  --splash-yellow:     #FFE93E;
+  --splash-sage:       #BCE8DC;
+  --splash-sky:        #5BC4F5;
+  --splash-pink:       #FF6B9D;
+  --splash-mint:       #7EE8A2;
+  --splash-orange:     #FFB347;
+  --splash-lavender:   #C4A8FF;
+  --splash-coral:      #FF8B8B;
+  --splash-turquoise:  #A8E6D9;
 }
 
 .dark {
@@ -118,13 +139,19 @@
   --secondary-foreground: #F5F5F5;
   --muted: #2A2A2A;
   --muted-foreground: #999999;
-  --accent: #FFE93E;
+  --accent: #BCE8DC;
   --accent-foreground: #111111;
-  --destructive: #FF5B52;
+  --destructive: #FF6B5E;
+  --destructive-foreground: #FFFFFF;
   --border: #333333;
   --input: #F5F5F5;
-  --ring: #FFE93E;
+  --ring: #BCE8DC;
   --shadow-hard: #F5F5F5;
+  --shadow-1: 1px 1px 0 var(--shadow-hard);
+  --shadow-2: 2px 2px 0 var(--shadow-hard);
+  --shadow-3: 3px 3px 0 var(--shadow-hard);
+  --shadow-4: 4px 4px 0 var(--shadow-hard);
+  --shadow-6: 6px 6px 0 var(--shadow-hard);
   --sidebar: #1A1A1A;
   --sidebar-foreground: #F5F5F5;
   --sidebar-primary: #F5F5F5;
@@ -132,8 +159,8 @@
   --sidebar-accent: #FFE93E;
   --sidebar-accent-foreground: #111111;
   --sidebar-border: #333333;
-  --sidebar-ring: #FFE93E;
-  --chart-1: #FFE93E;
+  --sidebar-ring: #BCE8DC;
+  --chart-1: #BCE8DC;
   --chart-2: #5BC4F5;
   --chart-3: #FF6B9D;
   --chart-4: #7EE8A2;
@@ -151,9 +178,46 @@
     @apply font-sans;
   }
   h1, h2 {
-    font-family: var(--font-caveat), var(--font-nunito), sans-serif;
+    font-family: var(--font-bricolage), var(--font-caveat), var(--font-space-grotesk), sans-serif;
     letter-spacing: 0.01em;
   }
+}
+
+/* -------------------------------------------------------
+   SIGNATURE TEXTURES — CROSSHATCH
+   Use on accent surfaces: empty-state backdrops, callouts,
+   import drop-zones. Never on full-page backgrounds.
+   ------------------------------------------------------- */
+.crosshatch {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(17,17,17,0.16) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(-45deg,
+      rgba(17,17,17,0.16) 0 1px, transparent 1px 6px);
+}
+.crosshatch-light {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(17,17,17,0.08) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg,
+      rgba(17,17,17,0.08) 0 1px, transparent 1px 7px);
+}
+.crosshatch-dense {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(17,17,17,0.28) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg,
+      rgba(17,17,17,0.28) 0 1px, transparent 1px 4px);
+}
+.stipple-dots {
+  background-image: radial-gradient(rgba(17,17,17,0.22) 1px, transparent 1.2px);
+  background-size: 6px 6px;
+}
+.pixel-grid {
+  background-image:
+    linear-gradient(to right, rgba(17,17,17,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(17,17,17,0.06) 1px, transparent 1px);
+  background-size: 8px 8px;
 }
 
 /* iOS safe area for bottom nav */
@@ -207,7 +271,7 @@
   border-color: var(--border) !important;
 }
 .fc .fc-day-today {
-  background-color: #FFE93E33 !important;
+  background-color: #BCE8DC33 !important;
 }
 .fc .fc-daygrid-event {
   border-radius: 999px !important;
