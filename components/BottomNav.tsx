@@ -60,20 +60,20 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-[#1F2024]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-      <div className="flex items-stretch pt-1">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-[#1F2024]">
+      <div className="flex items-center py-2" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}>
         {tabs.map((tab) => {
           const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-bold transition-colors ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
             >
               <span
-                className={`flex items-center justify-center w-12 h-7 transition-all border-2 ${
+                className={`flex items-center justify-center w-11 h-8 transition-all border-2 ${
                   active
                     ? "bg-accent border-[#1F2024] shadow-[2px_2px_0_#1F2024]"
                     : "border-transparent"
