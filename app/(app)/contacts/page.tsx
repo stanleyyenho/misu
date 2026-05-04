@@ -10,7 +10,10 @@ import { FriendsIllustration } from "@/components/illustrations/FriendsIllustrat
 
 const fetcher = async (url: string) => {
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`${r.status}`);
+  if (!r.ok) {
+    const body = await r.json().catch(() => ({}));
+    throw new Error(body.error ?? String(r.status));
+  }
   return r.json();
 };
 
