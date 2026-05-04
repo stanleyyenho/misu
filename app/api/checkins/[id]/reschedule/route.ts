@@ -34,6 +34,6 @@ export async function POST(
     data: { nextCheckIn: new Date(scheduledAt) },
   }).catch(() => {});
 
-  revalidateTag("checkins");
+  revalidateTag("checkins", "max");
   return NextResponse.json(checkIn);
 }

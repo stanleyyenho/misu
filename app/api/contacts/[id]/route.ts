@@ -37,7 +37,7 @@ export async function PUT(
   if (updated.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const contact = await prisma.contact.findUnique({ where: { id } });
-  revalidateTag("contacts");
+  revalidateTag("contacts", "max");
   return NextResponse.json(contact);
 }
 
@@ -60,7 +60,7 @@ export async function PATCH(
   if (updated.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const contact = await prisma.contact.findUnique({ where: { id } });
-  revalidateTag("contacts");
+  revalidateTag("contacts", "max");
   return NextResponse.json(contact);
 }
 
@@ -74,6 +74,6 @@ export async function DELETE(
   const { id } = await params;
   const deleted = await prisma.contact.deleteMany({ where: { id, userId: user.id } });
   if (deleted.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  revalidateTag("contacts");
+  revalidateTag("contacts", "max");
   return NextResponse.json({ success: true });
 }

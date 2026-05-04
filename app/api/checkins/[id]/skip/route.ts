@@ -24,7 +24,7 @@ export async function POST(
   });
 
   await createNextCheckIn(checkIn.contactId);
-  revalidateTag("checkins");
+  revalidateTag("checkins", "max");
 
   return NextResponse.json(checkIn);
 }

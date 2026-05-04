@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     data: { userId: user.id, firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes },
   });
 
-  revalidateTag("contacts");
+  revalidateTag("contacts", "max");
 
   return NextResponse.json(contact, { status: 201 });
 }
