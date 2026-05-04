@@ -1,20 +1,28 @@
 import { NextResponse } from "next/server";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/supabase/server";
+
+const fetchContacts = unstable_cache(
+  async (userId: string) => {
+    return prisma.contact.findMany({
+      where: { userId },
+      include: {
+        schedule: true,
+        groups: { select: { groupId: true } },
+      },
+      orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+    });
+  },
+  ["contacts"],
+  { tags: ["contacts"], revalidate: 300 }
+);
 
 export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const contacts = await prisma.contact.findMany({
-    where: { userId: user.id },
-    include: {
-      schedule: true,
-      groups: { select: { groupId: true } },
-    },
-    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
-  });
-  return NextResponse.json(contacts);
+  return NextResponse.json(await fetchContacts(user.id));
 }
 
 export async function POST(request: Request) {
@@ -31,5 +39,8 @@ export async function POST(request: Request) {
   const contact = await prisma.contact.create({
     data: { userId: user.id, firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes },
   });
+
+  revalidateTag("contacts");
+
   return NextResponse.json(contact, { status: 201 });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/supabase/server";
 
@@ -33,5 +34,6 @@ export async function POST(
     data: { nextCheckIn: new Date(scheduledAt) },
   }).catch(() => {});
 
+  revalidateTag("checkins");
   return NextResponse.json(checkIn);
 }

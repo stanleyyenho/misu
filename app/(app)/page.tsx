@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { format, isToday, isTomorrow, differenceInDays } from "date-fns";
 import { toast } from "sonner";
@@ -37,6 +38,12 @@ interface RecentActivity {
     firstName: string;
     lastName: string | null;
   };
+}
+
+interface DashboardData {
+  upcoming: UpcomingCheckIn[];
+  recent: RecentActivity[];
+  profile: { firstName: string | null } | null;
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -81,37 +88,21 @@ function dueDateColor(dateStr: string) {
   return "var(--muted-foreground)";
 }
 
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("fetch error");
+    return r.json();
+  });
+
 export default function DashboardPage() {
-  const [upcoming, setUpcoming] = useState<UpcomingCheckIn[]>([]);
-  const [recent, setRecent] = useState<RecentActivity[]>([]);
+  const { data, isLoading, error, mutate } = useSWR<DashboardData>("/api/dashboard", fetcher);
   const [activeCheckIn, setActiveCheckIn] = useState<UpcomingCheckIn | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [firstName, setFirstName] = useState<string | null>(null);
 
-  async function load() {
-    setLoading(true);
-    try {
-      const [upcomingRes, recentRes, profileRes] = await Promise.all([
-        fetch("/api/checkins?status=pending&days=14"),
-        fetch("/api/checkins?status=completed&limit=5"),
-        fetch("/api/profile"),
-      ]);
-      const [upcomingData, recentData, profileData] = await Promise.all([
-        upcomingRes.json(),
-        recentRes.json(),
-        profileRes.ok ? profileRes.json() : null,
-      ]);
-      setUpcoming(Array.isArray(upcomingData) ? upcomingData : []);
-      setRecent(Array.isArray(recentData) ? recentData : []);
-      setFirstName(profileData?.firstName ?? null);
-    } catch {
-      toast.error("Failed to load check-ins");
-    } finally {
-      setLoading(false);
-    }
-  }
+  if (error) toast.error("Failed to load check-ins");
 
-  useEffect(() => { load(); }, []);
+  const upcoming = data?.upcoming ?? [];
+  const recent = data?.recent ?? [];
+  const firstName = data?.profile?.firstName ?? null;
 
   return (
     <div className="max-w-[480px] mx-auto px-4 pt-5 pb-24 md:pb-6">
@@ -158,7 +149,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
               <div
@@ -315,7 +306,7 @@ export default function DashboardPage() {
       {activeCheckIn && (
         <MessagePreview
           checkIn={activeCheckIn}
-          onClose={() => { setActiveCheckIn(null); load(); }}
+          onClose={() => { setActiveCheckIn(null); mutate(); }}
         />
       )}
     </div>
