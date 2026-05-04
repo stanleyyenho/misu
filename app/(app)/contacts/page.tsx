@@ -8,7 +8,11 @@ import { Input } from "@/components/ui/input";
 import { getAvatarColor } from "@/lib/avatar-color";
 import { FriendsIllustration } from "@/components/illustrations/FriendsIllustration";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${r.status}`);
+  return r.json();
+};
 
 interface Contact {
   id: string;
@@ -37,7 +41,7 @@ const PLATFORM_LABELS: Record<string, string> = {
 };
 
 export default function ContactsPage() {
-  const { data: contacts = [] } = useSWR<Contact[]>("/api/contacts", fetcher);
+  const { data: contacts = [], error: contactsError } = useSWR<Contact[]>("/api/contacts", fetcher);
   const { data: groups = [] } = useSWR<Group[]>("/api/groups", fetcher);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
@@ -136,7 +140,12 @@ export default function ContactsPage() {
 
       {/* List */}
       <div className="flex-1 overflow-auto">
-        {filtered.length === 0 ? (
+        {contactsError ? (
+          <div className="text-center py-14 px-4">
+            <p className="text-sm text-destructive font-semibold">Failed to load contacts ({contactsError.message})</p>
+            <p className="text-xs text-muted-foreground mt-1">Check the browser console or Vercel logs for details.</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-14 text-muted-foreground px-4 flex flex-col items-center gap-4">
             <FriendsIllustration size={100} />
             <div>

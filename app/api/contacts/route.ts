@@ -7,15 +7,20 @@ export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const contacts = await prisma.contact.findMany({
-    where: { userId: user.id },
-    include: {
-      schedule: true,
-      groups: { select: { groupId: true } },
-    },
-    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
-  });
-  return NextResponse.json(contacts);
+  try {
+    const contacts = await prisma.contact.findMany({
+      where: { userId: user.id },
+      include: {
+        schedule: true,
+        groups: { select: { groupId: true } },
+      },
+      orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+    });
+    return NextResponse.json(contacts);
+  } catch (err) {
+    console.error("[GET /api/contacts]", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
