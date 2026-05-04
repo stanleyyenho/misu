@@ -35,13 +35,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // error.status === 401 means middleware will redirect; other errors → show onboarding
+  // Only show onboarding when we have a confirmed profile with onboardingComplete === false.
+  // Errors (transient 500s, network blips) must not trigger the modal — middleware handles 401s.
   const onboarding =
     !profile && !error
       ? "loading"
-      : error
-        ? (error.status === 401 ? "done" : "needed")
-        : (profile && !profile.onboardingComplete ? "needed" : "done");
+      : profile && !profile.onboardingComplete
+        ? "needed"
+        : "done";
 
   return (
     <div className="flex min-h-dvh">

@@ -112,7 +112,9 @@ export default function SettingsPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error ?? "Failed to save profile");
       }
-      mutate("/api/profile", profile, false);
+      // Re-fetch rather than optimistic update — preserves onboardingComplete and other
+      // server-side fields that the settings form doesn't manage.
+      mutate("/api/profile");
       toast.success("Profile saved!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save profile");
