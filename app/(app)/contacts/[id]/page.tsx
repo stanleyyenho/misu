@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { ScheduleForm } from "@/components/ScheduleForm";
 import { HangoutPlanningForm } from "@/components/HangoutPlanningForm";
-import { HangoutInstancesEditor } from "@/components/HangoutInstancesEditor";
 import { getAvatarColor } from "@/lib/avatar-color";
 
 interface CheckIn {
@@ -375,32 +374,21 @@ export default function ContactDetailPage() {
           )}
 
           {activeSection === "hangout" && (
-            <>
-              <ScheduleForm
-                sectionMode="hangout"
-                contactId={id}
-                contactPhone={contact.phone}
-                contactPlatform={contact.messagingPlatform}
-                initialFrequencyDays={contact.schedule?.isActive ? contact.schedule.frequencyDays : undefined}
-                initialTone={contact.schedule?.tone ?? "casual"}
-                initialApproveBeforeSend={contact.schedule?.approveBeforeSend ?? true}
-                initialHangoutType={contact.schedule?.hangoutType ?? "in-person"}
-                initialCadenceMode={contact.schedule?.cadenceMode ?? "perpetual"}
-                initialLeadTimeDays={contact.schedule?.leadTimeDays ?? 7}
-                initialDefaultHangout={contact.schedule?.defaultHangout ? JSON.parse(contact.schedule.defaultHangout) : null}
-                initialNoteToFriend={contact.schedule?.noteToFriend ?? null}
-                onSaved={load}
-              />
-              {contact.schedule?.isActive && contact.schedule.cadenceMode === "planned" && (
-                <>
-                  <div className="my-5 h-px bg-border" />
-                  <HangoutInstancesEditor
-                    contactId={id}
-                    hangoutType={contact.schedule.hangoutType}
-                  />
-                </>
-              )}
-            </>
+            <ScheduleForm
+              sectionMode="hangout"
+              contactId={id}
+              contactPhone={contact.phone}
+              contactPlatform={contact.messagingPlatform}
+              initialFrequencyDays={contact.schedule?.isActive ? contact.schedule.frequencyDays : undefined}
+              initialTone={contact.schedule?.tone ?? "casual"}
+              initialApproveBeforeSend={contact.schedule?.approveBeforeSend ?? true}
+              initialHangoutType={contact.schedule?.hangoutType ?? "in-person"}
+              initialCadenceMode={contact.schedule?.cadenceMode ?? "perpetual"}
+              initialLeadTimeDays={contact.schedule?.leadTimeDays ?? 7}
+              initialDefaultHangout={contact.schedule?.defaultHangout ? JSON.parse(contact.schedule.defaultHangout) : null}
+              initialNoteToFriend={contact.schedule?.noteToFriend ?? null}
+              onSaved={load}
+            />
           )}
 
           {activeSection === "one-time" && (

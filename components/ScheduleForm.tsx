@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { HangoutInstancesEditor } from "@/components/HangoutInstancesEditor";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,14 +29,6 @@ const FREQUENCY_PRESETS = [
   { label: "1 month", days: 30 },
   { label: "3 months", days: 90 },
   { label: "6 months", days: 180 },
-];
-
-const PLATFORMS = [
-  { id: "imessage", label: "iMessage" },
-  { id: "sms", label: "SMS" },
-  { id: "whatsapp", label: "WhatsApp" },
-  { id: "instagram", label: "Instagram" },
-  { id: "messenger", label: "Messenger" },
 ];
 
 const TONES = [
@@ -150,7 +143,7 @@ export function ScheduleForm({
     }
     setSaving(true);
     try {
-      if (platform !== contactPlatform) {
+      if (sectionMode === "check-in" && platform !== contactPlatform) {
         await fetch(`/api/contacts/${contactId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -249,26 +242,34 @@ export function ScheduleForm({
         </div>
       </div>
 
-      {/* Messaging platform */}
-      <div>
-        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Send via</Label>
-        <div className="flex flex-wrap gap-2">
-          {PLATFORMS.map((p) => (
-            <PillButton
-              key={p.id}
-              active={platform === p.id}
-              onClick={() => setPlatform(platform === p.id ? "" : p.id)}
-            >
-              {p.label}
-            </PillButton>
-          ))}
+      {/* Messaging platform — check-in mode only */}
+      {sectionMode === "check-in" && (
+        <div>
+          <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Send via</Label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: "imessage", label: "iMessage" },
+              { id: "sms", label: "SMS" },
+              { id: "whatsapp", label: "WhatsApp" },
+              { id: "instagram", label: "Instagram" },
+              { id: "messenger", label: "Messenger" },
+            ].map((p) => (
+              <PillButton
+                key={p.id}
+                active={platform === p.id}
+                onClick={() => setPlatform(platform === p.id ? "" : p.id)}
+              >
+                {p.label}
+              </PillButton>
+            ))}
+          </div>
+          {!contactPhone && platform === "sms" && (
+            <p className="text-xs text-[var(--destructive)] mt-1.5 font-semibold">
+              Add a phone number to this contact to use SMS
+            </p>
+          )}
         </div>
-        {!contactPhone && platform === "sms" && (
-          <p className="text-xs text-[var(--destructive)] mt-1.5 font-semibold">
-            Add a phone number to this contact to use SMS
-          </p>
-        )}
-      </div>
+      )}
 
       {/* Message tone */}
       <div>
@@ -433,9 +434,15 @@ export function ScheduleForm({
         </div>
       )}
 
-      {sectionMode === "hangout" && cadenceMode === "planned" && (
+      {sectionMode === "hangout" && cadenceMode === "planned" && initialCadenceMode === "planned" && (
+        <div className="pt-1">
+          <div className="my-3 h-px bg-border" />
+          <HangoutInstancesEditor contactId={contactId} hangoutType={hangoutType} />
+        </div>
+      )}
+      {sectionMode === "hangout" && cadenceMode === "planned" && initialCadenceMode !== "planned" && (
         <p className="text-xs text-muted-foreground rounded-[8px] border border-dashed border-[#DEDEDE] p-3">
-          Save your cadence first, then use the <strong>Planned hangouts</strong> section below to add up to 10 instances.
+          Save your cadence below first — your planned hangout slots will appear here.
         </p>
       )}
 
