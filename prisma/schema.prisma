@@ -63,6 +63,7 @@ model CheckInSchedule {
   cadenceMode      String    @default("prompt")    // prompt | perpetual | planned
   leadTimeDays     Int       @default(7)
   defaultHangout   String?   // JSON: { locationName, locationAddr, locationLat, locationLng, platform, meetingLink, time (HH:mm) }
+  noteToFriend     String?   // static note included with every recurring hangout invite
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   hangoutInstances HangoutInstance[]
