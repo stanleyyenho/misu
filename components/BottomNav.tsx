@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const tabs = [
   {
@@ -58,6 +58,7 @@ const tabs = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-[#1F2024]">
@@ -68,6 +69,7 @@ export function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
+              onTouchStart={() => router.prefetch(tab.href)}
               className={`flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
