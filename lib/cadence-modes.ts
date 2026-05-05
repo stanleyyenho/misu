@@ -114,6 +114,7 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
           locationLng: config.locationLng ?? null,
           platform: config.platform ?? null,
           meetingLink: config.meetingLink ?? null,
+          noteToFriend: schedule.noteToFriend ?? null,
           status: "draft",
         },
       });
@@ -152,6 +153,7 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
           locationLng: nextInstance.locationLng,
           platform: nextInstance.platform,
           meetingLink: nextInstance.meetingLink,
+          noteToFriend: schedule.noteToFriend ?? null,
           status: "draft",
         },
       });

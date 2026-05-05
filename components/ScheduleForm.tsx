@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { LocationSearch, type LocationResult } from "@/components/LocationSearch";
 
 const LEAD_TIME_PRESETS = [
@@ -29,21 +30,6 @@ const FREQUENCY_PRESETS = [
   { label: "6 months", days: 180 },
 ];
 
-const JITTER_PRESETS = [
-  { label: "none", days: 0 },
-  { label: "1 day", days: 1 },
-  { label: "2 days", days: 2 },
-  { label: "3 days", days: 3 },
-  { label: "1 week", days: 7 },
-  { label: "2 weeks", days: 14 },
-  { label: "1 month", days: 30 },
-];
-
-function maxJitter(frequencyDays: number | ""): number {
-  if (!frequencyDays) return 0;
-  return Math.floor(Number(frequencyDays) / 2);
-}
-
 const PLATFORMS = [
   { id: "imessage", label: "iMessage" },
   { id: "sms", label: "SMS" },
@@ -60,18 +46,18 @@ const TONES = [
 ];
 
 interface Props {
+  sectionMode: "check-in" | "hangout";
   contactId: string;
   contactPhone?: string | null;
   contactPlatform?: string | null;
   initialFrequencyDays?: number;
-  initialFrequencyJitterDays?: number;
   initialTone?: string;
-  initialCheckInType?: string;
   initialApproveBeforeSend?: boolean;
   initialHangoutType?: string;
   initialCadenceMode?: string;
   initialLeadTimeDays?: number;
   initialDefaultHangout?: Record<string, unknown> | null;
+  initialNoteToFriend?: string | null;
   onSaved?: () => void;
 }
 
@@ -102,32 +88,35 @@ function PillButton({
 }
 
 export function ScheduleForm({
+  sectionMode,
   contactId,
   contactPhone,
   contactPlatform,
   initialFrequencyDays,
-  initialFrequencyJitterDays = 0,
   initialTone = "casual",
-  initialCheckInType = "generic",
   initialApproveBeforeSend = true,
   initialHangoutType = "in-person",
   initialCadenceMode = "prompt",
   initialLeadTimeDays = 7,
   initialDefaultHangout = null,
+  initialNoteToFriend = null,
   onSaved,
 }: Props) {
   const [frequencyDays, setFrequencyDays] = useState<number | "">(
     initialFrequencyDays ?? ""
   );
-  const [frequencyJitterDays, setFrequencyJitterDays] = useState<number>(
-    initialFrequencyJitterDays
-  );
   const [platform, setPlatform] = useState(contactPlatform ?? "");
   const [tone, setTone] = useState(initialTone);
-  const [checkInType, setCheckInType] = useState(initialCheckInType);
   const [approveBeforeSend, setApproveBeforeSend] = useState(initialApproveBeforeSend);
   const [hangoutType, setHangoutType] = useState(initialHangoutType);
-  const [cadenceMode, setCadenceMode] = useState(initialCadenceMode);
+
+  const resolvedInitialCadenceMode = () => {
+    if (sectionMode === "check-in") return "prompt";
+    if (initialCadenceMode === "perpetual" || initialCadenceMode === "planned") return initialCadenceMode;
+    return "perpetual";
+  };
+  const [cadenceMode, setCadenceMode] = useState(resolvedInitialCadenceMode());
+
   const [leadTimeDays, setLeadTimeDays] = useState<number>(initialLeadTimeDays);
   const [defaultLocationName, setDefaultLocationName] = useState<string>(
     (initialDefaultHangout?.locationName as string) ?? ""
@@ -150,6 +139,8 @@ export function ScheduleForm({
   const [defaultTime, setDefaultTime] = useState<string>(
     (initialDefaultHangout?.time as string) ?? ""
   );
+  const [includeNote, setIncludeNote] = useState(!!initialNoteToFriend);
+  const [noteToFriend, setNoteToFriend] = useState(initialNoteToFriend ?? "");
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -159,7 +150,6 @@ export function ScheduleForm({
     }
     setSaving(true);
     try {
-      // Update the contact's messaging platform if changed
       if (platform !== contactPlatform) {
         await fetch(`/api/contacts/${contactId}`, {
           method: "PATCH",
@@ -168,10 +158,10 @@ export function ScheduleForm({
         });
       }
 
-      const clampedJitter = Math.min(frequencyJitterDays, maxJitter(frequencyDays));
+      const effectiveCadenceMode = sectionMode === "check-in" ? "prompt" : cadenceMode;
 
       let defaultHangout: Record<string, unknown> | null = null;
-      if (cadenceMode === "perpetual") {
+      if (effectiveCadenceMode === "perpetual") {
         defaultHangout = {
           locationName: defaultLocationName || null,
           locationAddr: defaultLocationAddr || null,
@@ -188,14 +178,15 @@ export function ScheduleForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           frequencyDays: Number(frequencyDays),
-          frequencyJitterDays: clampedJitter,
+          frequencyJitterDays: 0,
           tone,
-          checkInType,
+          checkInType: "generic",
           approveBeforeSend,
-          hangoutType,
-          cadenceMode,
+          hangoutType: sectionMode === "check-in" ? "in-person" : hangoutType,
+          cadenceMode: effectiveCadenceMode,
           leadTimeDays,
           defaultHangout,
+          noteToFriend: sectionMode === "hangout" && includeNote && noteToFriend.trim() ? noteToFriend.trim() : null,
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -230,10 +221,7 @@ export function ScheduleForm({
             <PillButton
               key={p.days}
               active={frequencyDays === p.days}
-              onClick={() => {
-                setFrequencyDays(p.days);
-                setFrequencyJitterDays((j) => Math.min(j, maxJitter(p.days)));
-              }}
+              onClick={() => setFrequencyDays(p.days)}
             >
               {p.label}
             </PillButton>
@@ -253,7 +241,6 @@ export function ScheduleForm({
             onChange={(e) => {
               const val = e.target.value ? Number(e.target.value) : "";
               setFrequencyDays(val);
-              if (val !== "") setFrequencyJitterDays((j) => Math.min(j, maxJitter(val)));
             }}
             className="w-24"
             style={{ borderRadius: "8px" }}
@@ -261,27 +248,6 @@ export function ScheduleForm({
           <span className="text-sm text-muted-foreground">days</span>
         </div>
       </div>
-
-      {/* Jitter */}
-      {frequencyDays !== "" && maxJitter(frequencyDays) >= 1 && (
-        <div>
-          <Label className="mb-1 block text-xs font-bold uppercase tracking-wide">Give or take</Label>
-          <p className="text-xs text-muted-foreground mb-2">
-            Misu will schedule each check-in randomly within this window to feel more natural
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {JITTER_PRESETS.filter((j) => j.days <= maxJitter(frequencyDays)).map((j) => (
-              <PillButton
-                key={j.days}
-                active={frequencyJitterDays === j.days}
-                onClick={() => setFrequencyJitterDays(j.days)}
-              >
-                {j.label}
-              </PillButton>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Messaging platform */}
       <div>
@@ -323,30 +289,6 @@ export function ScheduleForm({
         </p>
       </div>
 
-      {/* Check-in type */}
-      <div>
-        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Check-in type</Label>
-        <div className="flex flex-wrap gap-2">
-          <PillButton
-            active={checkInType === "generic"}
-            onClick={() => setCheckInType("generic")}
-          >
-            Generic
-          </PillButton>
-          <PillButton
-            active={checkInType === "hangout-prompt"}
-            onClick={() => setCheckInType("hangout-prompt")}
-          >
-            Hangout prompt
-          </PillButton>
-        </div>
-        <p className="text-xs text-muted-foreground mt-1.5">
-          {checkInType === "generic"
-            ? '"How have you been?" style messages'
-            : '"We need to hang soon" style messages with venue suggestions'}
-        </p>
-      </div>
-
       {/* Approve before send */}
       <div>
         <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Delivery mode</Label>
@@ -371,39 +313,39 @@ export function ScheduleForm({
         </p>
       </div>
 
-      {/* Hangout type */}
-      <div>
-        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Hangout type</Label>
-        <div className="flex gap-2">
-          <PillButton active={hangoutType === "in-person"} onClick={() => setHangoutType("in-person")}>
-            In-person
-          </PillButton>
-          <PillButton active={hangoutType === "digital"} onClick={() => setHangoutType("digital")}>
-            Digital
-          </PillButton>
+      {/* Hangout type — hangout section only */}
+      {sectionMode === "hangout" && (
+        <div>
+          <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Hangout type</Label>
+          <div className="flex gap-2">
+            <PillButton active={hangoutType === "in-person"} onClick={() => setHangoutType("in-person")}>
+              In-person
+            </PillButton>
+            <PillButton active={hangoutType === "digital"} onClick={() => setHangoutType("digital")}>
+              Digital
+            </PillButton>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Cadence mode */}
-      <div>
-        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Scheduling mode</Label>
-        <div className="flex flex-wrap gap-2">
-          <PillButton active={cadenceMode === "prompt"} onClick={() => setCadenceMode("prompt")}>
-            Prompt me
-          </PillButton>
-          <PillButton active={cadenceMode === "perpetual"} onClick={() => setCadenceMode("perpetual")}>
-            Repeat same plan
-          </PillButton>
-          <PillButton active={cadenceMode === "planned"} onClick={() => setCadenceMode("planned")}>
-            Pre-planned list
-          </PillButton>
+      {/* Cadence mode — hangout section only */}
+      {sectionMode === "hangout" && (
+        <div>
+          <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Scheduling mode</Label>
+          <div className="flex flex-wrap gap-2">
+            <PillButton active={cadenceMode === "perpetual"} onClick={() => setCadenceMode("perpetual")}>
+              Repeat same plan
+            </PillButton>
+            <PillButton active={cadenceMode === "planned"} onClick={() => setCadenceMode("planned")}>
+              Pre-planned list
+            </PillButton>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1.5">
+            {cadenceMode === "perpetual" && "Misu auto-sends the same invite every cycle."}
+            {cadenceMode === "planned" && "You pre-plan each hangout below; Misu sends them in order."}
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground mt-1.5">
-          {cadenceMode === "prompt" && "Misu notifies you when it's time — you pick the spot and send the invite."}
-          {cadenceMode === "perpetual" && "Misu auto-sends the same invite every cycle."}
-          {cadenceMode === "planned" && "You pre-plan each hangout below; Misu sends them in order."}
-        </p>
-      </div>
+      )}
 
       {/* Lead time */}
       <div>
@@ -429,8 +371,8 @@ export function ScheduleForm({
         </div>
       </div>
 
-      {/* Perpetual default hangout details */}
-      {cadenceMode === "perpetual" && (
+      {/* Perpetual default hangout details — hangout section only */}
+      {sectionMode === "hangout" && cadenceMode === "perpetual" && (
         <div className="space-y-3 rounded-[10px] border-2 border-[#1F2024] p-4" style={{ boxShadow: "2px 2px 0 #1F2024" }}>
           <p className="text-xs font-bold uppercase tracking-wide">Default hangout details</p>
           {hangoutType === "in-person" ? (
@@ -491,10 +433,47 @@ export function ScheduleForm({
         </div>
       )}
 
-      {cadenceMode === "planned" && (
+      {sectionMode === "hangout" && cadenceMode === "planned" && (
         <p className="text-xs text-muted-foreground rounded-[8px] border border-dashed border-[#DEDEDE] p-3">
           Save your cadence first, then use the <strong>Planned hangouts</strong> section below to add up to 10 instances.
         </p>
+      )}
+
+      {/* Personal note — hangout section only */}
+      {sectionMode === "hangout" && (
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Label className="text-xs font-bold uppercase tracking-wide">Include a personal note</Label>
+            <button
+              type="button"
+              onClick={() => setIncludeNote((v) => !v)}
+              className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-[#1F2024] transition-colors"
+              style={{ backgroundColor: includeNote ? "#1F2024" : "transparent" }}
+              aria-checked={includeNote}
+              role="switch"
+            >
+              <span
+                className="pointer-events-none inline-block h-3 w-3 rounded-full bg-[#1F2024] shadow transition-transform"
+                style={{
+                  transform: includeNote ? "translateX(16px)" : "translateX(2px)",
+                  backgroundColor: includeNote ? "#FFFFFF" : "#1F2024",
+                }}
+              />
+            </button>
+          </div>
+          {includeNote && (
+            <Textarea
+              placeholder="e.g. Can't wait to see you!"
+              rows={2}
+              value={noteToFriend}
+              onChange={(e) => setNoteToFriend(e.target.value)}
+              style={{ borderRadius: "8px" }}
+            />
+          )}
+          <p className="text-xs text-muted-foreground mt-1.5">
+            Included at the end of every invite sent to this contact
+          </p>
+        </div>
       )}
 
       {/* Actions */}

@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { ScheduleForm } from "@/components/ScheduleForm";
-import { HangoutPlanningModal } from "@/components/HangoutPlanningModal";
+import { HangoutPlanningForm } from "@/components/HangoutPlanningForm";
 import { HangoutInstancesEditor } from "@/components/HangoutInstancesEditor";
 import { getAvatarColor } from "@/lib/avatar-color";
 
@@ -57,6 +56,7 @@ interface Contact {
     cadenceMode: string;
     leadTimeDays: number;
     defaultHangout: string | null;
+    noteToFriend: string | null;
   } | null;
   checkIns: CheckIn[];
   hangouts: Hangout[];
@@ -94,6 +94,34 @@ const HANGOUT_PLATFORM_LABELS: Record<string, string> = {
   teams: "Teams",
   other: "Video call",
 };
+
+type Section = "check-in" | "hangout" | "one-time";
+
+function SectionPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="text-sm font-bold px-3 py-2 border-2 border-[#1F2024] transition-all"
+      style={{
+        borderRadius: "8px",
+        backgroundColor: active ? "#1F2024" : "transparent",
+        color: active ? "#FFFFFF" : "#1F2024",
+        boxShadow: active ? "2px 2px 0 #1F2024" : "none",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 function HangoutCard({ hangout, onUpdated }: { hangout: Hangout; onUpdated: () => void }) {
   const [sending, setSending] = useState(false);
@@ -168,7 +196,8 @@ export default function ContactDetailPage() {
   const [contact, setContact] = useState<Contact | null>(null);
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
-  const [hangoutModalOpen, setHangoutModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<Section | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   async function load() {
     const res = await fetch(`/api/contacts/${id}`);
@@ -176,6 +205,12 @@ export default function ContactDetailPage() {
     const data = await res.json();
     setContact(data);
     setNotes(data.notes ?? "");
+    if (!hasInitialized) {
+      setHasInitialized(true);
+      if (data.schedule?.isActive) {
+        setActiveSection(data.schedule.cadenceMode === "prompt" ? "check-in" : "hangout");
+      }
+    }
   }
 
   useEffect(() => { load(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -201,6 +236,10 @@ export default function ContactDetailPage() {
     await fetch(`/api/contacts/${id}`, { method: "DELETE" });
     toast.success("Contact deleted");
     router.push("/contacts");
+  }
+
+  function toggleSection(section: Section) {
+    setActiveSection((prev) => (prev === section ? null : section));
   }
 
   if (!contact) {
@@ -306,34 +345,70 @@ export default function ContactDetailPage() {
 
         <Separator className="my-5" />
 
-        {/* Cadence settings */}
+        {/* Section selector */}
         <section className="mb-5">
-          <h2 className="text-base font-bold mb-4">
-            {contact.schedule?.isActive ? "Edit cadence" : "Set a cadence"}
-          </h2>
-          <ScheduleForm
-            contactId={id}
-            contactPhone={contact.phone}
-            contactPlatform={contact.messagingPlatform}
-            initialFrequencyDays={contact.schedule?.isActive ? contact.schedule.frequencyDays : undefined}
-            initialFrequencyJitterDays={contact.schedule?.isActive ? (contact.schedule.frequencyJitterDays ?? 0) : 0}
-            initialTone={contact.schedule?.tone ?? "casual"}
-            initialCheckInType={contact.schedule?.checkInType ?? "generic"}
-            initialApproveBeforeSend={contact.schedule?.approveBeforeSend ?? true}
-            initialHangoutType={contact.schedule?.hangoutType ?? "in-person"}
-            initialCadenceMode={contact.schedule?.cadenceMode ?? "prompt"}
-            initialLeadTimeDays={contact.schedule?.leadTimeDays ?? 7}
-            initialDefaultHangout={contact.schedule?.defaultHangout ? JSON.parse(contact.schedule.defaultHangout) : null}
-            onSaved={load}
-          />
-          {contact.schedule?.isActive && contact.schedule.cadenceMode === "planned" && (
+          <div className="flex flex-wrap gap-2 mb-5">
+            <SectionPill active={activeSection === "check-in"} onClick={() => toggleSection("check-in")}>
+              Recurring Check-In
+            </SectionPill>
+            <SectionPill active={activeSection === "hangout"} onClick={() => toggleSection("hangout")}>
+              Recurring Hangout
+            </SectionPill>
+            <SectionPill active={activeSection === "one-time"} onClick={() => toggleSection("one-time")}>
+              One-Time Hangout
+            </SectionPill>
+          </div>
+
+          {activeSection === "check-in" && (
+            <ScheduleForm
+              sectionMode="check-in"
+              contactId={id}
+              contactPhone={contact.phone}
+              contactPlatform={contact.messagingPlatform}
+              initialFrequencyDays={contact.schedule?.isActive ? contact.schedule.frequencyDays : undefined}
+              initialTone={contact.schedule?.tone ?? "casual"}
+              initialApproveBeforeSend={contact.schedule?.approveBeforeSend ?? true}
+              initialCadenceMode="prompt"
+              initialLeadTimeDays={contact.schedule?.leadTimeDays ?? 7}
+              onSaved={load}
+            />
+          )}
+
+          {activeSection === "hangout" && (
             <>
-              <div className="my-5 h-px bg-border" />
-              <HangoutInstancesEditor
+              <ScheduleForm
+                sectionMode="hangout"
                 contactId={id}
-                hangoutType={contact.schedule.hangoutType}
+                contactPhone={contact.phone}
+                contactPlatform={contact.messagingPlatform}
+                initialFrequencyDays={contact.schedule?.isActive ? contact.schedule.frequencyDays : undefined}
+                initialTone={contact.schedule?.tone ?? "casual"}
+                initialApproveBeforeSend={contact.schedule?.approveBeforeSend ?? true}
+                initialHangoutType={contact.schedule?.hangoutType ?? "in-person"}
+                initialCadenceMode={contact.schedule?.cadenceMode ?? "perpetual"}
+                initialLeadTimeDays={contact.schedule?.leadTimeDays ?? 7}
+                initialDefaultHangout={contact.schedule?.defaultHangout ? JSON.parse(contact.schedule.defaultHangout) : null}
+                initialNoteToFriend={contact.schedule?.noteToFriend ?? null}
+                onSaved={load}
               />
+              {contact.schedule?.isActive && contact.schedule.cadenceMode === "planned" && (
+                <>
+                  <div className="my-5 h-px bg-border" />
+                  <HangoutInstancesEditor
+                    contactId={id}
+                    hangoutType={contact.schedule.hangoutType}
+                  />
+                </>
+              )}
             </>
+          )}
+
+          {activeSection === "one-time" && (
+            <HangoutPlanningForm
+              contactId={id}
+              contactName={name}
+              onCreated={load}
+            />
           )}
         </section>
 
@@ -392,19 +467,9 @@ export default function ContactDetailPage() {
 
         <Separator className="my-5" />
 
-        {/* Hangouts */}
+        {/* Hangouts list */}
         <section className="mb-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold">Hangouts</h2>
-            <Button
-              size="sm"
-              onClick={() => setHangoutModalOpen(true)}
-              style={{ borderRadius: "8px" }}
-            >
-              + Plan hangout
-            </Button>
-          </div>
-
+          <h2 className="text-base font-bold mb-4">Hangouts</h2>
           {contact.hangouts.length === 0 ? (
             <p className="text-sm text-muted-foreground">No hangouts planned yet.</p>
           ) : (
@@ -426,14 +491,6 @@ export default function ContactDetailPage() {
           Delete contact
         </Button>
       </div>
-
-      <HangoutPlanningModal
-        open={hangoutModalOpen}
-        onOpenChange={setHangoutModalOpen}
-        contactId={id}
-        contactName={name}
-        onCreated={load}
-      />
     </div>
   );
 }

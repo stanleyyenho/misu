@@ -25,6 +25,7 @@ export async function PUT(
     cadenceMode = "prompt",
     leadTimeDays = 7,
     defaultHangout = null,
+    noteToFriend = null,
   } = body;
 
   if (!frequencyDays) {
@@ -51,6 +52,7 @@ export async function PUT(
       cadenceMode,
       leadTimeDays: Number(leadTimeDays),
       defaultHangout: defaultHangout ? JSON.stringify(defaultHangout) : null,
+      noteToFriend: noteToFriend || null,
     },
     update: {
       frequencyDays,
@@ -64,6 +66,7 @@ export async function PUT(
       cadenceMode,
       leadTimeDays: Number(leadTimeDays),
       defaultHangout: defaultHangout ? JSON.stringify(defaultHangout) : null,
+      noteToFriend: noteToFriend || null,
     },
   });
 
