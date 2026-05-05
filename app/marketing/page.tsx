@@ -16,7 +16,7 @@ export default function MarketingPage() {
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <a href="#" className={styles.wordmark}>
-            <MoonMark size={28} />
+            <MisuMark size={28} />
             <span className={styles.wordmarkText}>misu</span>
           </a>
           <a href={APP_URL} className={styles.navCta}>
@@ -256,7 +256,7 @@ export default function MarketingPage() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <a href="#" className={styles.footerWordmark}>
-            <MoonMark size={20} />
+            <MisuMark size={20} />
             <span className={styles.footerWordmarkText}>misu</span>
           </a>
           <span className={styles.footerNote}>
@@ -268,20 +268,83 @@ export default function MarketingPage() {
   );
 }
 
-function MoonMark({ size }: { size: number }) {
+function MisuMark({ size }: { size: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <path
-        d="M 32 8 A 22 22 0 1 0 32 56 A 18 18 0 1 1 32 8 Z"
-        fill="#CDEBD6"
-        stroke="#1F2024"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      <rect x="50" y="10" width="3" height="3" fill="#1F2024" />
-      <rect x="55" y="14" width="2.5" height="2.5" fill="#1F2024" />
-      <rect x="48" y="17" width="2" height="2" fill="#1F2024" />
+    <svg width={size} height={size} viewBox="0 0 200 200" aria-hidden="true">
+      <rect width="200" height="200" rx="24" fill="#BCE8DC"/>
+      <g transform="translate(27.25, 25) scale(0.75)">
+        <rect x="46" y="22" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="22" width="12" height="12" fill="#1F2024"/>
+        <rect x="70" y="22" width="12" height="12" fill="#1F2024"/>
+        <rect x="82" y="22" width="12" height="12" fill="#1F2024"/>
+        <rect x="94" y="22" width="12" height="12" fill="#1F2024"/>
+        <rect x="106" y="22" width="12" height="12" fill="#1F2024"/>
+        <rect x="118" y="22" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="34" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="34" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="34" width="12" height="12" fill="#1F2024"/>
+        <rect x="70" y="34" width="12" height="12" fill="#1F2024"/>
+        <rect x="82" y="34" width="12" height="12" fill="#1F2024"/>
+        <rect x="94" y="34" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="46" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="46" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="46" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="46" width="12" height="12" fill="#1F2024"/>
+        <rect x="70" y="46" width="12" height="12" fill="#1F2024"/>
+        <rect x="10" y="58" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="58" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="58" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="58" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="58" width="12" height="12" fill="#1F2024"/>
+        <rect x="10" y="70" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="70" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="70" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="70" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="70" width="12" height="12" fill="#1F2024"/>
+        <rect x="10" y="82" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="82" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="82" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="82" width="12" height="12" fill="#1F2024"/>
+        <rect x="10" y="94" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="94" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="94" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="94" width="12" height="12" fill="#1F2024"/>
+        <rect x="10" y="106" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="106" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="106" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="106" width="12" height="12" fill="#1F2024"/>
+        <rect x="10" y="118" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="118" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="118" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="118" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="118" width="12" height="12" fill="#1F2024"/>
+        <rect x="10" y="130" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="130" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="130" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="130" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="130" width="12" height="12" fill="#1F2024"/>
+        <rect x="22" y="142" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="142" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="142" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="142" width="12" height="12" fill="#1F2024"/>
+        <rect x="70" y="142" width="12" height="12" fill="#1F2024"/>
+        <rect x="34" y="154" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="154" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="154" width="12" height="12" fill="#1F2024"/>
+        <rect x="70" y="154" width="12" height="12" fill="#1F2024"/>
+        <rect x="82" y="154" width="12" height="12" fill="#1F2024"/>
+        <rect x="94" y="154" width="12" height="12" fill="#1F2024"/>
+        <rect x="46" y="166" width="12" height="12" fill="#1F2024"/>
+        <rect x="58" y="166" width="12" height="12" fill="#1F2024"/>
+        <rect x="70" y="166" width="12" height="12" fill="#1F2024"/>
+        <rect x="82" y="166" width="12" height="12" fill="#1F2024"/>
+        <rect x="94" y="166" width="12" height="12" fill="#1F2024"/>
+        <rect x="106" y="166" width="12" height="12" fill="#1F2024"/>
+        <rect x="118" y="166" width="12" height="12" fill="#1F2024"/>
+        <rect x="142" y="22" width="24" height="24" fill="#1F2024"/>
+        <rect x="166" y="46" width="18" height="18" fill="#1F2024"/>
+        <rect x="142" y="70" width="12" height="12" fill="#1F2024"/>
+      </g>
     </svg>
   );
 }
