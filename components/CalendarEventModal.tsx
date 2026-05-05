@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -163,7 +164,11 @@ function CheckInDetailView({
           </p>
         )}
         <p className="text-sm text-muted-foreground">
-          Scheduled for <strong>{format(new Date(data.scheduledAt), "EEEE, MMMM d, yyyy")}</strong>
+          {isHangoutMode ? (
+            <>Invite sends on <strong>{format(new Date(data.scheduledAt), "EEEE, MMMM d, yyyy")}</strong></>
+          ) : (
+            <>Scheduled for <strong>{format(new Date(data.scheduledAt), "EEEE, MMMM d, yyyy")}</strong></>
+          )}
         </p>
       </div>
 
@@ -438,6 +443,7 @@ function RescheduleView({
 
 export function CalendarEventModal(props: CalendarEventModalProps) {
   const { onClose, onUpdate } = props;
+  const router = useRouter();
   const [view, setView] = useState<"detail" | "edit" | "reschedule">("detail");
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -521,14 +527,20 @@ export function CalendarEventModal(props: CalendarEventModalProps) {
                 {name[0]}{name.split(" ")[1]?.[0] ?? ""}
               </span>
             </div>
-            <DialogTitle className="text-left">{title}</DialogTitle>
+            <DialogTitle className="text-left" style={{ fontFamily: "var(--font-sans)" }}>{title}</DialogTitle>
           </div>
         </DialogHeader>
 
         {props.kind === "checkin" && view === "detail" && (
           <CheckInDetailView
             data={props.data}
-            onSend={props.onSend ? () => props.onSend!(props.data) : undefined}
+            onSend={(() => {
+              const isHangoutMode = props.data.contact.schedule?.cadenceMode !== "prompt";
+              if (isHangoutMode) {
+                return () => { onClose(); router.push(`/contacts/${props.data.contact.id}`); };
+              }
+              return props.onSend ? () => props.onSend!(props.data) : undefined;
+            })()}
             onSkip={skipCheckIn}
             onReschedule={() => setView("reschedule")}
           />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import Link from "next/link";
 import { format, isToday, isTomorrow, differenceInDays } from "date-fns";
@@ -203,6 +204,7 @@ function HangoutCompletionCard({ hangout, onUpdated }: { hangout: DashboardHango
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { data, isLoading, error, mutate } = useSWR<DashboardData>("/api/dashboard", fetcher);
   const [activeCheckIn, setActiveCheckIn] = useState<UpcomingCheckIn | null>(null);
   const [detailEvent, setDetailEvent] = useState<
@@ -217,6 +219,13 @@ export default function DashboardPage() {
   const upcomingHangouts = data?.upcomingHangouts ?? [];
   const awaitingCompletion = data?.awaitingCompletion ?? [];
 
+  const messageCheckIns = upcoming.filter(
+    (ci) => !ci.contact.schedule || ci.contact.schedule.cadenceMode === "prompt"
+  );
+  const hangoutReminders = upcoming.filter(
+    (ci) => ci.contact.schedule && ci.contact.schedule.cadenceMode !== "prompt"
+  );
+
   return (
     <div className="max-w-[480px] mx-auto px-4 pt-5 pb-24 md:pb-6">
       {/* Header */}
@@ -229,11 +238,11 @@ export default function DashboardPage() {
         </h1>
       </div>
 
-      {/* ── Upcoming check-ins ──────────────────────────────────────────── */}
+      {/* ── Message check-ins ───────────────────────────────────────────── */}
       <section className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <p style={{ fontFamily: "var(--font-pixel-display)", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>
-            up next
+            message check-ins
           </p>
           <Link href="/calendar" className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors">
             see all →
@@ -242,27 +251,26 @@ export default function DashboardPage() {
 
         {isLoading ? (
           <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
+            {[0, 1].map((i) => (
               <div key={i} className="h-20 rounded-[10px] border-2 border-[#1F2024] bg-secondary animate-pulse" style={{ boxShadow: "4px 4px 0 #1F2024" }} />
             ))}
           </div>
-        ) : upcoming.length === 0 ? (
+        ) : messageCheckIns.length === 0 ? (
           <div className="rounded-[10px] border-2 border-[#1F2024] bg-card p-6 flex flex-col items-center gap-3 text-center" style={{ boxShadow: "4px 4px 0 #1F2024" }}>
             <SunnyDayIllustration size={72} />
             <div>
               <p className="font-bold text-foreground">all caught up!</p>
-              <p className="text-sm text-muted-foreground mt-0.5">No check-ins due in the next two weeks.</p>
+              <p className="text-sm text-muted-foreground mt-0.5">No messages due in the next two weeks.</p>
             </div>
             <Link href="/contacts" className="text-sm font-bold underline underline-offset-2">Add a contact</Link>
           </div>
         ) : (
           <ul className="space-y-3">
-            {upcoming.map((ci) => {
+            {messageCheckIns.map((ci) => {
               const name = [ci.contact.firstName, ci.contact.lastName].filter(Boolean).join(" ");
               const color = getAvatarColor(name);
               const platform = ci.contact.messagingPlatform;
               const isOverdue = differenceInDays(new Date(ci.scheduledAt), new Date()) < 0;
-              const { icon, label } = checkInTypeInfo(ci);
               const freq = ci.contact.schedule?.frequencyDays;
 
               return (
@@ -271,7 +279,6 @@ export default function DashboardPage() {
                     className="rounded-[10px] border-2 border-[#1F2024] bg-card p-4 flex items-center gap-3"
                     style={{ boxShadow: "4px 4px 0 #1F2024" }}
                   >
-                    {/* Avatar */}
                     <div
                       className="h-11 w-11 rounded-full border-2 border-[#1F2024] flex items-center justify-center shrink-0 crosshatch-light"
                       style={{ backgroundColor: color.bg }}
@@ -280,8 +287,6 @@ export default function DashboardPage() {
                         {ci.contact.firstName[0]}{ci.contact.lastName?.[0] ?? ""}
                       </span>
                     </div>
-
-                    {/* Info — clickable for detail */}
                     <button
                       className="flex-1 min-w-0 text-left"
                       onClick={() => setDetailEvent({ kind: "checkin", data: ciToDetail(ci) })}
@@ -297,16 +302,13 @@ export default function DashboardPage() {
                           </span>
                         )}
                       </div>
-                      {/* Type + cadence row */}
                       <p className="text-[11px] text-muted-foreground mt-0.5 font-semibold">
-                        {icon} {label}{freq ? ` · every ${freq}d` : ""}
+                        💬 Message check-in{freq ? ` · every ${freq}d` : ""}
                       </p>
                       <p className="text-xs font-semibold mt-0.5" style={{ color: dueDateColor(ci.scheduledAt) }}>
                         {dueDateLabel(ci.scheduledAt)}{isOverdue ? " — overdue" : ""}
                       </p>
                     </button>
-
-                    {/* Send button */}
                     <button
                       onClick={() => setActiveCheckIn(ci)}
                       className="shrink-0 text-sm font-bold px-3 py-2 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
@@ -323,6 +325,66 @@ export default function DashboardPage() {
           </ul>
         )}
       </section>
+
+      {/* ── Hangout invite reminders ────────────────────────────────────── */}
+      {(isLoading || hangoutReminders.length > 0) && (
+        <section className="mb-8">
+          <p className="mb-3" style={{ fontFamily: "var(--font-pixel-display)", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>
+            hangout invites
+          </p>
+          {isLoading ? (
+            <div className="h-20 rounded-[10px] border-2 border-[#1F2024] bg-secondary animate-pulse" style={{ boxShadow: "4px 4px 0 #1F2024" }} />
+          ) : (
+            <ul className="space-y-3">
+              {hangoutReminders.map((ci) => {
+                const name = [ci.contact.firstName, ci.contact.lastName].filter(Boolean).join(" ");
+                const color = getAvatarColor(name);
+                const isOverdue = differenceInDays(new Date(ci.scheduledAt), new Date()) < 0;
+                const freq = ci.contact.schedule?.frequencyDays;
+
+                return (
+                  <li key={ci.id}>
+                    <div
+                      className="rounded-[10px] border-2 border-[#1F2024] bg-card p-4 flex items-center gap-3"
+                      style={{ boxShadow: "4px 4px 0 #1F2024" }}
+                    >
+                      <div
+                        className="h-11 w-11 rounded-full border-2 border-[#1F2024] flex items-center justify-center shrink-0 crosshatch-light"
+                        style={{ backgroundColor: color.bg }}
+                      >
+                        <span className="text-sm font-bold" style={{ color: color.fg }}>
+                          {ci.contact.firstName[0]}{ci.contact.lastName?.[0] ?? ""}
+                        </span>
+                      </div>
+                      <button
+                        className="flex-1 min-w-0 text-left"
+                        onClick={() => setDetailEvent({ kind: "checkin", data: ciToDetail(ci) })}
+                      >
+                        <p className="font-bold truncate">{name}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 font-semibold">
+                          🎊 Recurring hangout{freq ? ` · every ${freq}d` : ""}
+                        </p>
+                        <p className="text-xs font-semibold mt-0.5" style={{ color: dueDateColor(ci.scheduledAt) }}>
+                          Invite due {dueDateLabel(ci.scheduledAt)}{isOverdue ? " — overdue" : ""}
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => router.push(`/contacts/${ci.contact.id}`)}
+                        className="shrink-0 text-sm font-bold px-3 py-2 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+                        style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024", fontFamily: "var(--font-sans)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "3px 3px 0 #1F2024")}
+                        onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "2px 2px 0 #1F2024")}
+                      >
+                        plan
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      )}
 
       {/* ── Awaiting completion ─────────────────────────────────────────── */}
       {awaitingCompletion.length > 0 && (
