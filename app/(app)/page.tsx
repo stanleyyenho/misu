@@ -40,10 +40,22 @@ interface RecentActivity {
   };
 }
 
+interface DashboardHangout {
+  id: string;
+  type: string;
+  status: string;
+  date: string;
+  locationName: string | null;
+  platform: string | null;
+  contact: { id: string; firstName: string; lastName: string | null };
+}
+
 interface DashboardData {
   upcoming: UpcomingCheckIn[];
   recent: RecentActivity[];
   profile: { firstName: string | null } | null;
+  upcomingHangouts: DashboardHangout[];
+  awaitingCompletion: DashboardHangout[];
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -94,6 +106,69 @@ const fetcher = (url: string) =>
     return r.json();
   });
 
+function HangoutCompletionCard({ hangout, onUpdated }: { hangout: DashboardHangout; onUpdated: () => void }) {
+  const [loading, setLoading] = useState<"complete" | "skip" | null>(null);
+  const name = [hangout.contact.firstName, hangout.contact.lastName].filter(Boolean).join(" ");
+  const color = getAvatarColor(name);
+
+  async function handle(action: "complete" | "skip") {
+    setLoading(action);
+    try {
+      const res = await fetch(`/api/hangouts/${hangout.id}/${action}`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      toast.success(action === "complete" ? `Marked hangout with ${name} as done!` : "Hangout skipped.");
+      onUpdated();
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  return (
+    <li>
+      <div
+        className="rounded-[10px] border-2 border-[#1F2024] bg-card p-4 flex items-center gap-3"
+        style={{ boxShadow: "4px 4px 0 #1F2024" }}
+      >
+        <div
+          className="h-11 w-11 rounded-full border-2 border-[#1F2024] flex items-center justify-center shrink-0 crosshatch-light"
+          style={{ backgroundColor: color.bg }}
+        >
+          <span className="text-sm font-bold" style={{ color: color.fg }}>
+            {hangout.contact.firstName[0]}{hangout.contact.lastName?.[0] ?? ""}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold truncate">{name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {format(new Date(hangout.date), "EEE, MMM d 'at' h:mm a")}
+            {hangout.type === "in-person" && hangout.locationName ? ` · ${hangout.locationName}` : ""}
+          </p>
+        </div>
+        <div className="flex gap-1.5 shrink-0">
+          <button
+            onClick={() => handle("complete")}
+            disabled={!!loading}
+            className="text-xs font-bold px-2.5 py-1.5 border-2 border-[#1F2024] bg-[#1F2024] text-white"
+            style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024", opacity: loading ? 0.6 : 1 }}
+          >
+            {loading === "complete" ? "..." : "Done"}
+          </button>
+          <button
+            onClick={() => handle("skip")}
+            disabled={!!loading}
+            className="text-xs font-bold px-2.5 py-1.5 border-2 border-[#1F2024]"
+            style={{ borderRadius: "8px", opacity: loading ? 0.6 : 1 }}
+          >
+            {loading === "skip" ? "..." : "Skip"}
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+}
+
 export default function DashboardPage() {
   const { data, isLoading, error, mutate } = useSWR<DashboardData>("/api/dashboard", fetcher);
   const [activeCheckIn, setActiveCheckIn] = useState<UpcomingCheckIn | null>(null);
@@ -103,6 +178,8 @@ export default function DashboardPage() {
   const upcoming = data?.upcoming ?? [];
   const recent = data?.recent ?? [];
   const firstName = data?.profile?.firstName ?? null;
+  const upcomingHangouts = data?.upcomingHangouts ?? [];
+  const awaitingCompletion = data?.awaitingCompletion ?? [];
 
   return (
     <div className="max-w-[480px] mx-auto px-4 pt-5 pb-24 md:pb-6">
@@ -250,6 +327,74 @@ export default function DashboardPage() {
           </ul>
         )}
       </section>
+
+      {/* Awaiting completion */}
+      {awaitingCompletion.length > 0 && (
+        <section className="mb-8">
+          <p
+            className="mb-3"
+            style={{ fontFamily: "var(--font-pixel-display)", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)" }}
+          >
+            did you go?
+          </p>
+          <ul className="space-y-3">
+            {awaitingCompletion.map((h) => (
+              <HangoutCompletionCard key={h.id} hangout={h} onUpdated={() => mutate()} />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Upcoming confirmed hangouts */}
+      {upcomingHangouts.length > 0 && (
+        <section className="mb-8">
+          <p
+            className="mb-3"
+            style={{ fontFamily: "var(--font-pixel-display)", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)" }}
+          >
+            confirmed hangouts
+          </p>
+          <ul className="space-y-3">
+            {upcomingHangouts.map((h) => {
+              const name = [h.contact.firstName, h.contact.lastName].filter(Boolean).join(" ");
+              const color = getAvatarColor(name);
+              return (
+                <li key={h.id}>
+                  <Link href={`/contacts/${h.contact.id}`}>
+                    <div
+                      className="rounded-[10px] border-2 border-[#1F2024] bg-card p-4 flex items-center gap-3"
+                      style={{ boxShadow: "4px 4px 0 #1F2024" }}
+                    >
+                      <div
+                        className="h-11 w-11 rounded-full border-2 border-[#1F2024] flex items-center justify-center shrink-0 crosshatch-light"
+                        style={{ backgroundColor: color.bg }}
+                      >
+                        <span className="text-sm font-bold" style={{ color: color.fg }}>
+                          {h.contact.firstName[0]}{h.contact.lastName?.[0] ?? ""}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold truncate">{name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {format(new Date(h.date), "EEE, MMM d 'at' h:mm a")}
+                          {h.type === "in-person" && h.locationName ? ` · ${h.locationName}` : ""}
+                          {h.type === "digital" && h.platform ? ` · ${h.platform}` : ""}
+                        </p>
+                      </div>
+                      <span
+                        className="text-[11px] font-bold px-2 py-0.5 border-2 border-[#1F2024] shrink-0"
+                        style={{ borderRadius: "8px", backgroundColor: "var(--splash-mint)", boxShadow: "1px 1px 0 #1F2024" }}
+                      >
+                        {h.status}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* Recent activity */}
       {recent.length > 0 && (

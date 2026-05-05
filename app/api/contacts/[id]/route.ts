@@ -13,7 +13,11 @@ export async function GET(
   const { id } = await params;
   const contact = await prisma.contact.findFirst({
     where: { id, userId: user.id },
-    include: { schedule: true, checkIns: { orderBy: { scheduledAt: "asc" } } },
+    include: {
+      schedule: true,
+      checkIns: { orderBy: { scheduledAt: "asc" } },
+      hangouts: { orderBy: { date: "desc" }, take: 10 },
+    },
   });
   if (!contact) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(contact);

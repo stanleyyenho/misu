@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScheduleForm } from "@/components/ScheduleForm";
+import { HangoutPlanningModal } from "@/components/HangoutPlanningModal";
+import { HangoutInstancesEditor } from "@/components/HangoutInstancesEditor";
 import { getAvatarColor } from "@/lib/avatar-color";
 
 interface CheckIn {
@@ -20,6 +22,18 @@ interface CheckIn {
   format: string | null;
   notes: string | null;
   status: string;
+}
+
+interface Hangout {
+  id: string;
+  type: string;
+  status: string;
+  date: string;
+  locationName: string | null;
+  locationAddr: string | null;
+  platform: string | null;
+  meetingLink: string | null;
+  noteToFriend: string | null;
 }
 
 interface Contact {
@@ -39,8 +53,13 @@ interface Contact {
     approveBeforeSend: boolean;
     nextCheckIn: string;
     isActive: boolean;
+    hangoutType: string;
+    cadenceMode: string;
+    leadTimeDays: number;
+    defaultHangout: string | null;
   } | null;
   checkIns: CheckIn[];
+  hangouts: Hangout[];
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -58,12 +77,98 @@ const TONE_LABELS: Record<string, string> = {
   playful: "Playful",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  invited: "Invited",
+  confirmed: "Confirmed",
+  declined: "Declined",
+  counter: "Counter-proposed",
+  completed: "Completed",
+  skipped: "Skipped",
+};
+
+const HANGOUT_PLATFORM_LABELS: Record<string, string> = {
+  facetime: "FaceTime",
+  zoom: "Zoom",
+  "google-meet": "Google Meet",
+  teams: "Teams",
+  other: "Video call",
+};
+
+function HangoutCard({ hangout, onUpdated }: { hangout: Hangout; onUpdated: () => void }) {
+  const [sending, setSending] = useState(false);
+
+  async function handleSendInvite() {
+    setSending(true);
+    try {
+      const res = await fetch(`/api/hangouts/${hangout.id}/send-invite`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error ?? "Failed to send invite"); return; }
+      if (data.warnings?.length) toast.warning(data.warnings.join("; "));
+      else toast.success("Invite sent!");
+      onUpdated();
+    } catch {
+      toast.error("Failed to send invite");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <li
+      className="rounded-[10px] border-2 border-[#1F2024] p-3 text-sm"
+      style={{ boxShadow: "2px 2px 0 #1F2024" }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-bold">
+            {format(new Date(hangout.date), "MMM d, yyyy 'at' h:mm a")}
+          </p>
+          {hangout.type === "in-person" && hangout.locationName && (
+            <p className="text-muted-foreground mt-0.5 truncate">
+              {hangout.locationName}{hangout.locationAddr ? ` · ${hangout.locationAddr}` : ""}
+            </p>
+          )}
+          {hangout.type === "digital" && hangout.platform && (
+            <p className="text-muted-foreground mt-0.5">
+              {HANGOUT_PLATFORM_LABELS[hangout.platform] ?? hangout.platform}
+              {hangout.meetingLink ? " · link provided" : ""}
+            </p>
+          )}
+          {hangout.status === "counter" && hangout.noteToFriend && (
+            <p className="mt-1 text-xs font-semibold text-amber-600">{hangout.noteToFriend}</p>
+          )}
+        </div>
+        <Badge
+          variant="outline"
+          className="shrink-0 text-[11px] font-bold border border-[#DEDEDE] capitalize"
+          style={{ borderRadius: "8px" }}
+        >
+          {STATUS_LABELS[hangout.status] ?? hangout.status}
+        </Badge>
+      </div>
+      {hangout.status === "draft" && (
+        <Button
+          size="sm"
+          onClick={handleSendInvite}
+          disabled={sending}
+          className="mt-3 w-full"
+          style={{ borderRadius: "8px" }}
+        >
+          {sending ? "Sending..." : "Send invite"}
+        </Button>
+      )}
+    </li>
+  );
+}
+
 export default function ContactDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [contact, setContact] = useState<Contact | null>(null);
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [hangoutModalOpen, setHangoutModalOpen] = useState(false);
 
   async function load() {
     const res = await fetch(`/api/contacts/${id}`);
@@ -215,8 +320,21 @@ export default function ContactDetailPage() {
             initialTone={contact.schedule?.tone ?? "casual"}
             initialCheckInType={contact.schedule?.checkInType ?? "generic"}
             initialApproveBeforeSend={contact.schedule?.approveBeforeSend ?? true}
+            initialHangoutType={contact.schedule?.hangoutType ?? "in-person"}
+            initialCadenceMode={contact.schedule?.cadenceMode ?? "prompt"}
+            initialLeadTimeDays={contact.schedule?.leadTimeDays ?? 7}
+            initialDefaultHangout={contact.schedule?.defaultHangout ? JSON.parse(contact.schedule.defaultHangout) : null}
             onSaved={load}
           />
+          {contact.schedule?.isActive && contact.schedule.cadenceMode === "planned" && (
+            <>
+              <div className="my-5 h-px bg-border" />
+              <HangoutInstancesEditor
+                contactId={id}
+                hangoutType={contact.schedule.hangoutType}
+              />
+            </>
+          )}
         </section>
 
         <Separator className="my-5" />
@@ -273,6 +391,32 @@ export default function ContactDetailPage() {
         )}
 
         <Separator className="my-5" />
+
+        {/* Hangouts */}
+        <section className="mb-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold">Hangouts</h2>
+            <Button
+              size="sm"
+              onClick={() => setHangoutModalOpen(true)}
+              style={{ borderRadius: "8px" }}
+            >
+              + Plan hangout
+            </Button>
+          </div>
+
+          {contact.hangouts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No hangouts planned yet.</p>
+          ) : (
+            <ul className="space-y-3">
+              {contact.hangouts.map((h) => (
+                <HangoutCard key={h.id} hangout={h} onUpdated={load} />
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <Separator className="my-5" />
         <Button
           variant="destructive"
           size="sm"
@@ -282,6 +426,14 @@ export default function ContactDetailPage() {
           Delete contact
         </Button>
       </div>
+
+      <HangoutPlanningModal
+        open={hangoutModalOpen}
+        onOpenChange={setHangoutModalOpen}
+        contactId={id}
+        contactName={name}
+        onCreated={load}
+      />
     </div>
   );
 }

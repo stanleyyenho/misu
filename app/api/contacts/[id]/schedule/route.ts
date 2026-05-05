@@ -21,6 +21,10 @@ export async function PUT(
     tone = "casual",
     checkInType = "generic",
     approveBeforeSend = true,
+    hangoutType = "in-person",
+    cadenceMode = "prompt",
+    leadTimeDays = 7,
+    defaultHangout = null,
   } = body;
 
   if (!frequencyDays) {
@@ -43,6 +47,10 @@ export async function PUT(
       approveBeforeSend,
       nextCheckIn,
       isActive: true,
+      hangoutType,
+      cadenceMode,
+      leadTimeDays: Number(leadTimeDays),
+      defaultHangout: defaultHangout ? JSON.stringify(defaultHangout) : null,
     },
     update: {
       frequencyDays,
@@ -52,6 +60,10 @@ export async function PUT(
       approveBeforeSend,
       nextCheckIn,
       isActive: true,
+      hangoutType,
+      cadenceMode,
+      leadTimeDays: Number(leadTimeDays),
+      defaultHangout: defaultHangout ? JSON.stringify(defaultHangout) : null,
     },
   });
 

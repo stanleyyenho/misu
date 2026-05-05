@@ -8,12 +8,14 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const [upcoming, recent, profile] = await Promise.all([
+    const now = new Date();
+
+    const [upcoming, recent, profile, upcomingHangouts, awaitingCompletion] = await Promise.all([
       prisma.checkIn.findMany({
         where: {
           contact: { userId: user.id },
           status: "pending",
-          scheduledAt: { lte: addDays(new Date(), 14) },
+          scheduledAt: { lte: addDays(now, 14) },
         },
         include: {
           contact: {
@@ -41,9 +43,31 @@ export async function GET() {
         take: 5,
       }),
       prisma.userProfile.findUnique({ where: { userId: user.id } }),
+      // Upcoming confirmed hangouts (next 30 days)
+      prisma.hangout.findMany({
+        where: {
+          userId: user.id,
+          status: { in: ["confirmed", "invited"] },
+          date: { gte: now, lte: addDays(now, 30) },
+        },
+        include: { contact: { select: { id: true, firstName: true, lastName: true } } },
+        orderBy: { date: "asc" },
+        take: 5,
+      }),
+      // Past hangouts awaiting completion
+      prisma.hangout.findMany({
+        where: {
+          userId: user.id,
+          status: { in: ["confirmed", "invited"] },
+          date: { lt: now },
+        },
+        include: { contact: { select: { id: true, firstName: true, lastName: true } } },
+        orderBy: { date: "desc" },
+        take: 5,
+      }),
     ]);
 
-    return NextResponse.json({ upcoming, recent, profile });
+    return NextResponse.json({ upcoming, recent, profile, upcomingHangouts, awaitingCompletion });
   } catch (err) {
     console.error("[GET /api/dashboard]", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });

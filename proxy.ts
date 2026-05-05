@@ -54,7 +54,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/marketing") ||
     pathname.startsWith("/api/calendar/") || // public iCal URLs
     pathname.startsWith("/api/notifications/vapid-public-key") ||
-    pathname.startsWith("/api/cron/");
+    pathname.startsWith("/api/cron/") ||
+    pathname.startsWith("/api/webhooks/"); // Twilio and other inbound webhooks
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

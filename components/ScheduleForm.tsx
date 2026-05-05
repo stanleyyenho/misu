@@ -5,6 +5,21 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LocationSearch, type LocationResult } from "@/components/LocationSearch";
+
+const LEAD_TIME_PRESETS = [
+  { label: "3 days", days: 3 },
+  { label: "1 week", days: 7 },
+  { label: "2 weeks", days: 14 },
+];
+
+const DIGITAL_PLATFORMS = [
+  { id: "facetime", label: "FaceTime" },
+  { id: "zoom", label: "Zoom" },
+  { id: "google-meet", label: "Google Meet" },
+  { id: "teams", label: "Teams" },
+  { id: "other", label: "Other" },
+];
 
 const FREQUENCY_PRESETS = [
   { label: "1 week", days: 7 },
@@ -53,6 +68,10 @@ interface Props {
   initialTone?: string;
   initialCheckInType?: string;
   initialApproveBeforeSend?: boolean;
+  initialHangoutType?: string;
+  initialCadenceMode?: string;
+  initialLeadTimeDays?: number;
+  initialDefaultHangout?: Record<string, unknown> | null;
   onSaved?: () => void;
 }
 
@@ -91,6 +110,10 @@ export function ScheduleForm({
   initialTone = "casual",
   initialCheckInType = "generic",
   initialApproveBeforeSend = true,
+  initialHangoutType = "in-person",
+  initialCadenceMode = "prompt",
+  initialLeadTimeDays = 7,
+  initialDefaultHangout = null,
   onSaved,
 }: Props) {
   const [frequencyDays, setFrequencyDays] = useState<number | "">(
@@ -103,6 +126,30 @@ export function ScheduleForm({
   const [tone, setTone] = useState(initialTone);
   const [checkInType, setCheckInType] = useState(initialCheckInType);
   const [approveBeforeSend, setApproveBeforeSend] = useState(initialApproveBeforeSend);
+  const [hangoutType, setHangoutType] = useState(initialHangoutType);
+  const [cadenceMode, setCadenceMode] = useState(initialCadenceMode);
+  const [leadTimeDays, setLeadTimeDays] = useState<number>(initialLeadTimeDays);
+  const [defaultLocationName, setDefaultLocationName] = useState<string>(
+    (initialDefaultHangout?.locationName as string) ?? ""
+  );
+  const [defaultLocationAddr, setDefaultLocationAddr] = useState<string>(
+    (initialDefaultHangout?.locationAddr as string) ?? ""
+  );
+  const [defaultLocationLat, setDefaultLocationLat] = useState<number | null>(
+    (initialDefaultHangout?.locationLat as number) ?? null
+  );
+  const [defaultLocationLng, setDefaultLocationLng] = useState<number | null>(
+    (initialDefaultHangout?.locationLng as number) ?? null
+  );
+  const [defaultPlatform, setDefaultPlatform] = useState<string>(
+    (initialDefaultHangout?.platform as string) ?? ""
+  );
+  const [defaultMeetingLink, setDefaultMeetingLink] = useState<string>(
+    (initialDefaultHangout?.meetingLink as string) ?? ""
+  );
+  const [defaultTime, setDefaultTime] = useState<string>(
+    (initialDefaultHangout?.time as string) ?? ""
+  );
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -122,6 +169,20 @@ export function ScheduleForm({
       }
 
       const clampedJitter = Math.min(frequencyJitterDays, maxJitter(frequencyDays));
+
+      let defaultHangout: Record<string, unknown> | null = null;
+      if (cadenceMode === "perpetual") {
+        defaultHangout = {
+          locationName: defaultLocationName || null,
+          locationAddr: defaultLocationAddr || null,
+          locationLat: defaultLocationLat,
+          locationLng: defaultLocationLng,
+          platform: defaultPlatform || null,
+          meetingLink: defaultMeetingLink || null,
+          time: defaultTime || null,
+        };
+      }
+
       const res = await fetch(`/api/contacts/${contactId}/schedule`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -131,6 +192,10 @@ export function ScheduleForm({
           tone,
           checkInType,
           approveBeforeSend,
+          hangoutType,
+          cadenceMode,
+          leadTimeDays,
+          defaultHangout,
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -305,6 +370,132 @@ export function ScheduleForm({
             : "SMS messages send automatically (requires Twilio)"}
         </p>
       </div>
+
+      {/* Hangout type */}
+      <div>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Hangout type</Label>
+        <div className="flex gap-2">
+          <PillButton active={hangoutType === "in-person"} onClick={() => setHangoutType("in-person")}>
+            In-person
+          </PillButton>
+          <PillButton active={hangoutType === "digital"} onClick={() => setHangoutType("digital")}>
+            Digital
+          </PillButton>
+        </div>
+      </div>
+
+      {/* Cadence mode */}
+      <div>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Scheduling mode</Label>
+        <div className="flex flex-wrap gap-2">
+          <PillButton active={cadenceMode === "prompt"} onClick={() => setCadenceMode("prompt")}>
+            Prompt me
+          </PillButton>
+          <PillButton active={cadenceMode === "perpetual"} onClick={() => setCadenceMode("perpetual")}>
+            Repeat same plan
+          </PillButton>
+          <PillButton active={cadenceMode === "planned"} onClick={() => setCadenceMode("planned")}>
+            Pre-planned list
+          </PillButton>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          {cadenceMode === "prompt" && "Misu notifies you when it's time — you pick the spot and send the invite."}
+          {cadenceMode === "perpetual" && "Misu auto-sends the same invite every cycle."}
+          {cadenceMode === "planned" && "You pre-plan each hangout below; Misu sends them in order."}
+        </p>
+      </div>
+
+      {/* Lead time */}
+      <div>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">Lead time</Label>
+        <div className="flex flex-wrap gap-2">
+          {LEAD_TIME_PRESETS.map((p) => (
+            <PillButton key={p.days} active={leadTimeDays === p.days} onClick={() => setLeadTimeDays(p.days)}>
+              {p.label}
+            </PillButton>
+          ))}
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={1}
+              placeholder="Custom"
+              value={!LEAD_TIME_PRESETS.some((p) => p.days === leadTimeDays) ? leadTimeDays : ""}
+              onChange={(e) => { if (e.target.value) setLeadTimeDays(Number(e.target.value)); }}
+              className="w-20"
+              style={{ borderRadius: "8px" }}
+            />
+            <span className="text-sm text-muted-foreground">days before</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Perpetual default hangout details */}
+      {cadenceMode === "perpetual" && (
+        <div className="space-y-3 rounded-[10px] border-2 border-[#1F2024] p-4" style={{ boxShadow: "2px 2px 0 #1F2024" }}>
+          <p className="text-xs font-bold uppercase tracking-wide">Default hangout details</p>
+          {hangoutType === "in-person" ? (
+            <div>
+              <Label className="mb-1.5 block text-xs font-semibold">Venue</Label>
+              <LocationSearch
+                value={defaultLocationName}
+                onChange={(val) => {
+                  setDefaultLocationName(val);
+                  if (defaultLocationLat !== null) { setDefaultLocationLat(null); setDefaultLocationLng(null); setDefaultLocationAddr(""); }
+                }}
+                onSelect={(r: LocationResult) => {
+                  setDefaultLocationName(r.name);
+                  setDefaultLocationAddr(r.address);
+                  setDefaultLocationLat(r.lat);
+                  setDefaultLocationLng(r.lng);
+                }}
+                placeholder="Search for a venue..."
+              />
+              {defaultLocationAddr && (
+                <p className="mt-1 text-xs text-muted-foreground truncate">{defaultLocationAddr}</p>
+              )}
+            </div>
+          ) : (
+            <>
+              <div>
+                <Label className="mb-1.5 block text-xs font-semibold">Platform</Label>
+                <div className="flex flex-wrap gap-2">
+                  {DIGITAL_PLATFORMS.map((p) => (
+                    <PillButton key={p.id} active={defaultPlatform === p.id} onClick={() => setDefaultPlatform(p.id)}>
+                      {p.label}
+                    </PillButton>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="mb-1.5 block text-xs font-semibold">Meeting link (optional)</Label>
+                <Input
+                  type="url"
+                  placeholder="https://zoom.us/j/..."
+                  value={defaultMeetingLink}
+                  onChange={(e) => setDefaultMeetingLink(e.target.value)}
+                  style={{ borderRadius: "8px" }}
+                />
+              </div>
+            </>
+          )}
+          <div>
+            <Label className="mb-1.5 block text-xs font-semibold">Default time</Label>
+            <Input
+              type="time"
+              value={defaultTime}
+              onChange={(e) => setDefaultTime(e.target.value)}
+              className="w-36"
+              style={{ borderRadius: "8px" }}
+            />
+          </div>
+        </div>
+      )}
+
+      {cadenceMode === "planned" && (
+        <p className="text-xs text-muted-foreground rounded-[8px] border border-dashed border-[#DEDEDE] p-3">
+          Save your cadence first, then use the <strong>Planned hangouts</strong> section below to add up to 10 instances.
+        </p>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2 pt-1">

@@ -24,6 +24,7 @@ model Contact {
   checkIns          CheckIn[]
   messageLogs       MessageLog[]
   groups            ContactGroupMember[]
+  hangouts          Hangout[]
 }
 
 model ContactGroup {
@@ -57,8 +58,14 @@ model CheckInSchedule {
   nextCheckIn      DateTime
   lastCheckIn      DateTime?
   isActive         Boolean   @default(true)
+  // v2 hangout coordination
+  hangoutType      String    @default("in-person") // in-person | digital
+  cadenceMode      String    @default("prompt")    // prompt | perpetual | planned
+  leadTimeDays     Int       @default(7)
+  defaultHangout   String?   // JSON: { locationName, locationAddr, locationLat, locationLng, platform, meetingLink, time (HH:mm) }
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  hangoutInstances HangoutInstance[]
 }
 
 model CheckIn {
@@ -73,6 +80,7 @@ model CheckIn {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   messageLog  MessageLog?
+  hangout     Hangout?
 }
 
 // Tracks every AI-generated message: draft, sent, or delivered
@@ -116,4 +124,59 @@ model NotificationSubscription {
   endpoint  String   @unique
   keys      String   // JSON: { p256dh, auth }
   createdAt DateTime @default(now())
+}
+
+model Hangout {
+  id            String            @id @default(cuid())
+  userId        String
+  contactId     String
+  contact       Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  checkInId     String?           @unique
+  checkIn       CheckIn?          @relation(fields: [checkInId], references: [id], onDelete: SetNull)
+  type          String            // in-person | digital
+  status        String            @default("draft") // draft | invited | confirmed | declined | counter | completed | skipped
+  date          DateTime
+  locationName  String?
+  locationAddr  String?
+  locationLat   Float?
+  locationLng   Float?
+  platform      String?           // zoom | facetime | google-meet | teams | other
+  meetingLink   String?
+  noteToFriend  String?
+  calInviteSent Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  reminders     HangoutReminder[]
+  instance      HangoutInstance?
+}
+
+model HangoutReminder {
+  id        String   @id @default(cuid())
+  hangoutId String
+  hangout   Hangout  @relation(fields: [hangoutId], references: [id], onDelete: Cascade)
+  sendAt    DateTime
+  channel   String   // sms | push
+  recipient String   // contact | user
+  sentAt    DateTime?
+  status    String   @default("scheduled") // scheduled | sent | failed
+  createdAt DateTime @default(now())
+}
+
+model HangoutInstance {
+  id           String          @id @default(cuid())
+  scheduleId   String
+  schedule     CheckInSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  instanceNum  Int
+  date         DateTime
+  locationName String?
+  locationAddr String?
+  locationLat  Float?
+  locationLng  Float?
+  platform     String?
+  meetingLink  String?
+  hangoutId    String?         @unique
+  hangout      Hangout?        @relation(fields: [hangoutId], references: [id], onDelete: SetNull)
+  createdAt    DateTime        @default(now())
+
+  @@unique([scheduleId, instanceNum])
 }
