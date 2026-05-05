@@ -61,7 +61,7 @@ export function BottomNav() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-[#1F2024]">
-      <div className="flex items-center py-2" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}>
+      <div className="flex items-center pt-3 pb-1" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 4px)" }}>
         {tabs.map((tab) => {
           const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
           return (
