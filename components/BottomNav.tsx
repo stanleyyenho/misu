@@ -9,7 +9,7 @@ const tabs = [
     label: "Dashboard",
     exact: true,
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1" fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.15 : 0} />
         <rect x="14" y="3" width="7" height="7" rx="1" fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.15 : 0} />
@@ -23,7 +23,7 @@ const tabs = [
     label: "Contacts",
     exact: false,
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="8" r="4" fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.15 : 0} />
         <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
@@ -35,7 +35,7 @@ const tabs = [
     label: "Calendar",
     exact: false,
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="3" fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.12 : 0} />
         <path d="M16 2v4M8 2v4M3 10h18" />
@@ -47,7 +47,7 @@ const tabs = [
     label: "Settings",
     exact: false,
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3" fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.15 : 0} />
         <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
@@ -73,7 +73,7 @@ export function BottomNav() {
               }`}
             >
               <span
-                className={`flex items-center justify-center w-11 h-8 transition-all border-2 ${
+                className={`flex items-center justify-center w-12 h-10 transition-all border-2 ${
                   active
                     ? "bg-accent border-[#1F2024] shadow-[2px_2px_0_#1F2024]"
                     : "border-transparent"
