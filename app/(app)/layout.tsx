@@ -47,7 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh">
       <SideNav />
-      <main className="flex-1 overflow-auto md:pb-0" style={{ paddingBottom: "calc(3.5rem + env(safe-area-inset-bottom))" }}>{children}</main>
+      <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
       <BottomNav />
       {onboarding === "needed" && (
         <OnboardingModal
