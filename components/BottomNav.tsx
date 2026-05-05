@@ -61,7 +61,8 @@ export function BottomNav() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-[#1F2024]">
-      <div className="flex items-center pt-3 pb-1" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 4px)" }}>
+      {/* Content row — fixed height, never overlaps the home indicator */}
+      <div className="flex items-center pt-3 pb-2">
         {tabs.map((tab) => {
           const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
           return (
@@ -87,6 +88,8 @@ export function BottomNav() {
           );
         })}
       </div>
+      {/* Safe-area spacer — pure background, no content, no gesture conflict */}
+      <div style={{ height: "env(safe-area-inset-bottom)" }} />
     </nav>
   );
 }
