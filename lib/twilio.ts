@@ -8,7 +8,13 @@ function getClient() {
 }
 
 export async function sendSms(to: string, body: string) {
+  const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+  if (messagingServiceSid) {
+    // A2P 10DLC compliant: send via Messaging Service
+    return getClient().messages.create({ to, messagingServiceSid, body });
+  }
+  // Fallback for local dev without a Messaging Service
   const from = process.env.TWILIO_PHONE_NUMBER;
-  if (!from) throw new Error("TWILIO_PHONE_NUMBER is required");
+  if (!from) throw new Error("TWILIO_PHONE_NUMBER or TWILIO_MESSAGING_SERVICE_SID is required");
   return getClient().messages.create({ to, from, body });
 }
