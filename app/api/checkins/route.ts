@@ -35,6 +35,8 @@ export async function GET(request: Request) {
                 tone: true,
                 checkInType: true,
                 approveBeforeSend: true,
+                frequencyDays: true,
+                cadenceMode: true,
               },
             },
           },
