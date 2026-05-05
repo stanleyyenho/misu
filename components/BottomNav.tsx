@@ -71,9 +71,10 @@ export function BottomNav() {
               className={`flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
+              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
               <span
-                className={`flex items-center justify-center w-12 h-10 transition-all border-2 ${
+                className={`flex items-center justify-center w-12 h-10 transition-colors border-2 ${
                   active
                     ? "bg-accent border-[#1F2024] shadow-[2px_2px_0_#1F2024]"
                     : "border-transparent"
