@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationSearch, type LocationResult } from "@/components/LocationSearch";
 
-const MAX_INSTANCES = 10;
+const MAX_INSTANCES = 5;
 
 const DIGITAL_PLATFORMS = [
   { id: "facetime", label: "FaceTime" },

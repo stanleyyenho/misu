@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "misu — never lose touch",
+  title: "misu — stay genuinely close",
   description:
-    "misu reminds you to reach out to the friends and family you care about — on a cadence you choose, in the format that feels right.",
+    "misu helps you actually show up for the people who matter — with AI-crafted messages, hangout planning, and smart cadences that fit your life.",
 };
 
 const APP_URL = "https://app.misu.care";
@@ -28,17 +28,17 @@ export default function MarketingPage() {
       {/* ── HERO ── */}
       <section className={styles.hero}>
         <div className={styles.inner}>
-          <div className={styles.heroEyebrow}>the check-in app</div>
+          <div className={styles.heroEyebrow}>your relationship co-pilot</div>
 
           <h1 className={styles.heroHeading}>
-            stay close to the
+            actually show up for
             <br />
-            people who <span className={styles.accentWord}>matter</span>
+            the people who <span className={styles.accentWord}>matter</span>
           </h1>
 
           <p className={styles.heroSub}>
-            misu reminds you to reach out to the friends and family you care
-            about — on a cadence you choose, in the format that feels right.
+            misu helps you stay genuinely close — with AI-crafted check-ins,
+            hangout planning, and smart cadences that fit around your life.
           </p>
 
           <div className={styles.heroActions}>
@@ -52,7 +52,7 @@ export default function MarketingPage() {
               <span className={styles.btnAccentLabel}>open misu</span>
             </a>
           </div>
-          <div className={styles.heroNote}>free to use · no credit card needed</div>
+          <div className={styles.heroNote}>free to use · no credit card needed · works with SMS, iMessage &amp; more</div>
 
           {/* Hero mini-UI mockup */}
           <div className={styles.heroIllo}>
@@ -106,66 +106,70 @@ export default function MarketingPage() {
           <h2 className={styles.sectionHeading}>thoughtful by design</h2>
 
           <div className={styles.featureGrid}>
-            {/* Card 1 — Cadence */}
+            {/* Card 1 — AI messages */}
             <div className={`${styles.featureCard} ${styles.accentCard}`}>
-              <div className={styles.featureIcon}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </div>
-              <div className={styles.featureTitle}>set your cadence</div>
-              <div className={styles.featureBody}>
-                Weekly, monthly, custom — every person gets their own rhythm. misu keeps track so you don&apos;t have to.
-              </div>
-              <div className={styles.freqRow}>
-                <div className={`${styles.freqChip} ${styles.freqChipActive}`}>weekly</div>
-                <div className={styles.freqChip}>2 weeks</div>
-                <div className={styles.freqChip}>monthly</div>
-              </div>
-            </div>
-
-            {/* Card 2 — Formats */}
-            <div className={styles.featureCard}>
               <div className={styles.featureIcon}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
-              <div className={styles.featureTitle}>your format, always</div>
+              <div className={styles.featureTitle}>AI writes the message</div>
               <div className={styles.featureBody}>
-                Phone call, FaceTime, in person — log however you actually catch up.
+                misu drafts a warm, natural check-in based on what you know about the person. Review it, tweak it, send it — or let it go automatically.
               </div>
-              <div className={styles.formatPills}>
-                <span className={styles.formatPill} style={{ background: "#7EE8A2" }}>FaceTime</span>
-                <span className={styles.formatPill} style={{ background: "#FF6B9D", color: "#fff" }}>Phone</span>
-                <span className={styles.formatPill} style={{ background: "#FFB347" }}>In Person</span>
-                <span className={styles.formatPill} style={{ background: "#5BC4F5" }}>Zoom</span>
+              <div className={styles.freqRow}>
+                <div className={`${styles.freqChip} ${styles.freqChipActive}`}>casual</div>
+                <div className={styles.freqChip}>warm</div>
+                <div className={styles.freqChip}>playful</div>
               </div>
             </div>
 
-            {/* Card 3 — Log */}
-            <div className={`${styles.featureCard} ${styles.yellowCard}`}>
-              <div className={styles.featureIcon}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </div>
-              <div className={styles.featureTitle}>quick check-in log</div>
-              <div className={styles.featureBody}>
-                Mark it done in two taps. Add a note about what you talked about — for next time.
-              </div>
-            </div>
-
-            {/* Card 4 — Reminders */}
+            {/* Card 2 — Hangout planning */}
             <div className={styles.featureCard}>
               <div className={styles.featureIcon}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
               </div>
-              <div className={styles.featureTitle}>gentle reminders</div>
+              <div className={styles.featureTitle}>plan real hangouts</div>
               <div className={styles.featureBody}>
-                No guilt, no pressure. misu nudges you when it&apos;s time — and reschedules gracefully when life gets busy.
+                Set up recurring hangouts or one-off plans. misu sends the invite at the right time, so you don&apos;t have to remember to.
+              </div>
+              <div className={styles.formatPills}>
+                <span className={styles.formatPill} style={{ background: "#7EE8A2" }}>In-person</span>
+                <span className={styles.formatPill} style={{ background: "#5BC4F5" }}>FaceTime</span>
+                <span className={styles.formatPill} style={{ background: "#FFB347" }}>Zoom</span>
+              </div>
+            </div>
+
+            {/* Card 3 — Cadence */}
+            <div className={`${styles.featureCard} ${styles.yellowCard}`}>
+              <div className={styles.featureIcon}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div className={styles.featureTitle}>your cadence, per person</div>
+              <div className={styles.featureBody}>
+                Weekly with your parents. Monthly with old friends. misu tracks each relationship at its own rhythm, no spreadsheet needed.
+              </div>
+            </div>
+
+            {/* Card 4 — Multi-platform */}
+            <div className={styles.featureCard}>
+              <div className={styles.featureIcon}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.1 3.4 2 2 0 0 1 3.08 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+              </div>
+              <div className={styles.featureTitle}>send where they are</div>
+              <div className={styles.featureBody}>
+                SMS, iMessage, WhatsApp, Instagram, Messenger — misu meets each person on the platform they actually use.
+              </div>
+              <div className={styles.formatPills}>
+                <span className={styles.formatPill} style={{ background: "#BCE8DC" }}>iMessage</span>
+                <span className={styles.formatPill} style={{ background: "#7EE8A2" }}>WhatsApp</span>
+                <span className={styles.formatPill} style={{ background: "#FF6B9D", color: "#fff" }}>Instagram</span>
               </div>
             </div>
           </div>
@@ -184,7 +188,7 @@ export default function MarketingPage() {
               <div>
                 <div className={styles.stepTitle}>add your people</div>
                 <div className={styles.stepDesc}>
-                  Add the friends and family you want to stay close to. Import from your contacts, or add them one by one.
+                  Add the friends and family you want to stay close to. Set their preferred platform — iMessage, SMS, WhatsApp, and more.
                 </div>
               </div>
             </div>
@@ -192,9 +196,9 @@ export default function MarketingPage() {
             <div className={styles.step}>
               <div className={styles.stepNum}>02</div>
               <div>
-                <div className={styles.stepTitle}>set the cadence</div>
+                <div className={styles.stepTitle}>set a cadence or plan a hangout</div>
                 <div className={styles.stepDesc}>
-                  Choose how often you want to check in — weekly, monthly, or a custom interval. misu schedules the rest.
+                  Schedule recurring check-ins or real hangouts at whatever frequency feels right. misu tracks it all so nothing falls through the cracks.
                 </div>
                 <div className={styles.miniCal}>
                   <div className={styles.miniCalHeader}>MAY 2026</div>
@@ -223,9 +227,9 @@ export default function MarketingPage() {
             <div className={styles.step}>
               <div className={styles.stepNum}>03</div>
               <div>
-                <div className={styles.stepTitle}>check in, log it</div>
+                <div className={styles.stepTitle}>misu drafts it, you send it</div>
                 <div className={styles.stepDesc}>
-                  When the reminder pops, reach out. Then mark it done — and jot a quick note if you like. All caught up!
+                  When it&apos;s time, misu generates a personal message or hangout invite. Review, approve, and send — or let it go automatically.
                 </div>
               </div>
             </div>
@@ -239,9 +243,9 @@ export default function MarketingPage() {
           <div className={styles.ctaIllo}>
             <SunnyDayIllo />
           </div>
-          <h2 className={styles.ctaHeading}>who are you missing?</h2>
+          <h2 className={styles.ctaHeading}>who have you been meaning to reach out to?</h2>
           <p className={styles.ctaSub}>
-            Start with one person. Add a cadence. Let misu do the remembering.
+            Start with one person. Set a cadence. misu handles the rest.
           </p>
           <a href={APP_URL} className={`${styles.btnPrimary} ${styles.ctaBtn}`}>
             start catching up
@@ -260,7 +264,7 @@ export default function MarketingPage() {
             <span className={styles.footerWordmarkText}>misu</span>
           </a>
           <span className={styles.footerNote}>
-            reminding you to check in with the people you care about.
+            your relationship co-pilot — AI messages, hangout planning, and smart cadences.
           </span>
         </div>
       </footer>

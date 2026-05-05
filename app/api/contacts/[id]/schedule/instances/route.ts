@@ -51,8 +51,8 @@ export async function PUT(
     meetingLink?: string;
   }> = body.instances ?? [];
 
-  if (instances.length > 10) {
-    return NextResponse.json({ error: "Maximum 10 instances allowed" }, { status: 400 });
+  if (instances.length > 5) {
+    return NextResponse.json({ error: "Maximum 5 instances allowed" }, { status: 400 });
   }
 
   // Delete only unactivated instances (keep ones already linked to a real Hangout)

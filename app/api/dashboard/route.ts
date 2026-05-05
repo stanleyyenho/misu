@@ -43,11 +43,11 @@ export async function GET() {
         take: 5,
       }),
       prisma.userProfile.findUnique({ where: { userId: user.id } }),
-      // Upcoming confirmed hangouts (next 30 days)
+      // Upcoming hangouts (next 30 days) — any non-completed status
       prisma.hangout.findMany({
         where: {
           userId: user.id,
-          status: { in: ["confirmed", "invited"] },
+          status: { in: ["draft", "invited", "confirmed"] },
           date: { gte: now, lte: addDays(now, 30) },
         },
         include: { contact: { select: { id: true, firstName: true, lastName: true } } },
