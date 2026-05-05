@@ -68,7 +68,7 @@ export function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-bold transition-colors ${
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 pt-1.5 pb-4 text-[10px] font-bold transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
             >
