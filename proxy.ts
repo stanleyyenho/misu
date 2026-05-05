@@ -38,12 +38,21 @@ export async function proxy(request: NextRequest) {
     host === "misu.care" || host === "www.misu.care";
 
   if (isMarketingDomain) {
-    if (pathname === "/" || pathname === "") {
+    // Pages served directly on misu.care — rewrite to /marketing/* routes
+    const marketingPaths: Record<string, string> = {
+      "/": "/marketing",
+      "": "/marketing",
+      "/privacy": "/marketing/privacy",
+      "/terms": "/marketing/terms",
+    };
+
+    if (pathname in marketingPaths) {
       const url = request.nextUrl.clone();
-      url.pathname = "/marketing";
+      url.pathname = marketingPaths[pathname];
       return NextResponse.rewrite(url);
     }
-    // Redirect all other paths on misu.care to app.misu.care
+
+    // All other paths on misu.care redirect to app.misu.care
     return NextResponse.redirect(`https://app.misu.care${pathname}`);
   }
 
@@ -51,7 +60,7 @@ export async function proxy(request: NextRequest) {
   const isPublic =
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth/") ||
-    pathname.startsWith("/marketing") ||
+    pathname.startsWith("/marketing") || // marketing site + privacy/terms pages
     pathname.startsWith("/api/calendar/") || // public iCal URLs
     pathname.startsWith("/api/notifications/vapid-public-key") ||
     pathname.startsWith("/api/cron/") ||
