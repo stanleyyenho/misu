@@ -27,7 +27,7 @@ export async function GET() {
               messagingPlatform: true,
               notes: true,
               schedule: {
-                select: { tone: true, checkInType: true, approveBeforeSend: true },
+                select: { tone: true, checkInType: true, approveBeforeSend: true, frequencyDays: true, cadenceMode: true },
               },
             },
           },
@@ -50,7 +50,12 @@ export async function GET() {
           status: { in: ["draft", "invited", "confirmed"] },
           date: { gte: now, lte: addDays(now, 30) },
         },
-        include: { contact: { select: { id: true, firstName: true, lastName: true } } },
+        select: {
+          id: true, type: true, status: true, date: true,
+          locationName: true, locationAddr: true, platform: true,
+          meetingLink: true, noteToFriend: true, checkInId: true,
+          contact: { select: { id: true, firstName: true, lastName: true, phone: true } },
+        },
         orderBy: { date: "asc" },
         take: 5,
       }),
