@@ -1,7 +1,7 @@
 import { addDays } from "date-fns";
 import { prisma } from "./prisma";
 
-export async function createNextCheckIn(contactId: string): Promise<void> {
+export async function createNextCheckIn(contactId: string, fromDate?: Date): Promise<void> {
   const schedule = await prisma.checkInSchedule.findUnique({
     where: { contactId },
   });
@@ -9,7 +9,8 @@ export async function createNextCheckIn(contactId: string): Promise<void> {
 
   const jitter = schedule.frequencyJitterDays ?? 0;
   const jitterOffset = jitter > 0 ? Math.floor(Math.random() * (jitter * 2 + 1)) - jitter : 0;
-  const nextDate = addDays(new Date(), schedule.frequencyDays + jitterOffset);
+  const base = fromDate ?? new Date();
+  const nextDate = addDays(base, schedule.frequencyDays + jitterOffset);
 
   await prisma.checkIn.create({
     data: {
