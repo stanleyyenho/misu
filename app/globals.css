@@ -11,7 +11,7 @@
   --font-mono: var(--font-space-mono);
   --font-pixel-display: var(--font-silkscreen);
   --font-script: var(--font-bricolage);
-  --font-heading: var(--font-caveat);
+  --font-heading: var(--font-silkscreen);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -178,7 +178,7 @@
     @apply font-sans;
   }
   h1, h2 {
-    font-family: var(--font-bricolage), var(--font-caveat), var(--font-space-grotesk), sans-serif;
+    font-family: var(--font-bricolage), var(--font-silkscreen), var(--font-space-grotesk), sans-serif;
     letter-spacing: 0.01em;
   }
 }
@@ -229,7 +229,7 @@
 .fc .fc-toolbar-title {
   font-size: 1.05rem;
   font-weight: 700;
-  font-family: var(--font-caveat), var(--font-sans);
+  font-family: var(--font-silkscreen), var(--font-sans);
   letter-spacing: 0.01em;
 }
 .fc .fc-button {
