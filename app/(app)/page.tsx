@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { format, isToday, isTomorrow, differenceInDays } from "date-fns";
@@ -150,15 +150,72 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AddButton({ onClick, label }: { onClick: () => void; label: string }) {
+function ScheduleSomethingButton({
+  onRecurringHangout,
+  onOneTimeHangout,
+  onRecurringCheckIn,
+}: {
+  onRecurringHangout: () => void;
+  onOneTimeHangout: () => void;
+  onRecurringCheckIn: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    function handlePointerDown(e: PointerEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [expanded]);
+
+  function pick(handler: () => void) {
+    return () => {
+      setExpanded(false);
+      handler();
+    };
+  }
+
   return (
-    <button
-      onClick={onClick}
-      className="text-xs font-bold px-2.5 py-1 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
-      style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024" }}
-    >
-      {label}
-    </button>
+    <div ref={containerRef} className="w-full">
+      {!expanded ? (
+        <button
+          onClick={() => setExpanded(true)}
+          className="w-full text-sm font-bold px-4 py-3 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+          style={{ borderRadius: "10px", boxShadow: "4px 4px 0 #1F2024" }}
+        >
+          + Schedule something!
+        </button>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            onClick={pick(onRecurringHangout)}
+            className="text-[11px] font-bold leading-tight px-2 py-2.5 border-2 border-[#1F2024] bg-card transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+            style={{ borderRadius: "10px", boxShadow: "3px 3px 0 #1F2024", backgroundColor: "var(--splash-mint)" }}
+          >
+            Recurring<br />Hangout
+          </button>
+          <button
+            onClick={pick(onOneTimeHangout)}
+            className="text-[11px] font-bold leading-tight px-2 py-2.5 border-2 border-[#1F2024] transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+            style={{ borderRadius: "10px", boxShadow: "3px 3px 0 #1F2024", backgroundColor: "var(--splash-yellow)" }}
+          >
+            One-Time<br />Hangout
+          </button>
+          <button
+            onClick={pick(onRecurringCheckIn)}
+            className="text-[11px] font-bold leading-tight px-2 py-2.5 border-2 border-[#1F2024] transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+            style={{ borderRadius: "10px", boxShadow: "3px 3px 0 #1F2024", backgroundColor: "var(--splash-pink)" }}
+          >
+            Recurring<br />Check-In
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -318,6 +375,15 @@ export default function DashboardPage() {
         </h1>
       </div>
 
+      {/* Schedule something */}
+      <div className="mb-6">
+        <ScheduleSomethingButton
+          onRecurringHangout={() => setAddRecurringOpen(true)}
+          onOneTimeHangout={() => setAddOneTimeOpen(true)}
+          onRecurringCheckIn={() => setAddCheckInOpen(true)}
+        />
+      </div>
+
       {/* ══════════════════════════════════════════════════════════════════
           SECTION 1: HANGOUTS
       ══════════════════════════════════════════════════════════════════ */}
@@ -340,9 +406,8 @@ export default function DashboardPage() {
 
         {/* 1a — Recurring */}
         <div className="mb-5">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2">
             <p className="text-xs font-bold uppercase tracking-wide text-foreground">Recurring</p>
-            <AddButton onClick={() => setAddRecurringOpen(true)} label="+ Add" />
           </div>
 
           {isLoading ? (
@@ -418,9 +483,8 @@ export default function DashboardPage() {
 
         {/* 1b — One-time */}
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2">
             <p className="text-xs font-bold uppercase tracking-wide text-foreground">One-time</p>
-            <AddButton onClick={() => setAddOneTimeOpen(true)} label="+ Add" />
           </div>
 
           {isLoading ? (
@@ -494,9 +558,8 @@ export default function DashboardPage() {
           SECTION 2: CHECK-IN MESSAGES
       ══════════════════════════════════════════════════════════════════ */}
       <section className="mb-10">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <SectionLabel>check-in messages</SectionLabel>
-          <AddButton onClick={() => setAddCheckInOpen(true)} label="+ Add" />
         </div>
 
         {isLoading ? (
