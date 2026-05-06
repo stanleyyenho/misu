@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { getAvatarColor } from "@/lib/avatar-color";
-import { FriendsIllustration } from "@/components/illustrations/FriendsIllustration";
+import { EmptyContactsIllustration } from "@/components/illustrations/EmptyContactsIllustration";
 
 const fetcher = async (url: string) => {
   const r = await fetch(url);
@@ -150,7 +150,7 @@ export default function ContactsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-14 text-muted-foreground px-4 flex flex-col items-center gap-4">
-            <FriendsIllustration size={100} />
+            <EmptyContactsIllustration size={100} />
             <div>
               <p className="font-bold text-foreground text-base">no contacts yet</p>
               <p className="text-sm mt-1">

@@ -210,7 +210,7 @@
 .heroIllo {
   margin-top: 48px;
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 16px;
 }
 
@@ -225,7 +225,7 @@
   flex-shrink: 0;
   overflow: hidden;
 }
-.large { width: 160px; height: 160px; padding: 12px; }
+.large { width: 160px; height: auto; padding: 12px; align-self: stretch; }
 .med   { width: 128px; height: 128px; padding: 10px; }
 .small { width: 100px; height: 100px; padding: 8px; }
 
