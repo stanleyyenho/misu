@@ -3,10 +3,9 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useState, useEffect, useCallback } from "react";
-import { format, isToday, isTomorrow, isPast } from "date-fns";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { format, isPast, differenceInCalendarDays } from "date-fns";
 import { CalendarEventModal, type CheckInDetail, type HangoutDetail } from "@/components/CalendarEventModal";
-import { Badge } from "@/components/ui/badge";
 import { SunnyDayIllustration } from "./illustrations/SunnyDayIllustration";
 import { getAvatarColor } from "@/lib/avatar-color";
 
@@ -34,14 +33,6 @@ function getContactColor(contactId: string): string {
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
-
-function dateLabel(dateStr: string) {
-  const d = new Date(dateStr);
-  if (isToday(d)) return "Today";
-  if (isTomorrow(d)) return "Tomorrow";
-  if (isPast(d)) return `Overdue · ${format(d, "MMM d")}`;
-  return format(d, "EEE, MMM d");
-}
 
 function checkInIcon(ci: CheckInDetail): string {
   const cadenceMode = ci.contact.schedule?.cadenceMode;
@@ -107,6 +98,28 @@ export function CalendarView() {
 
   const events = [...checkInEvents, ...hangoutEvents];
 
+  // ── unified mobile list: combine, sort, group by month ──────────────────
+
+  type ListItem =
+    | { kind: "checkin"; data: CheckInDetail; date: Date }
+    | { kind: "hangout"; data: HangoutDetail; date: Date };
+
+  const monthGroups = useMemo(() => {
+    const items: ListItem[] = [
+      ...checkIns.map((ci) => ({ kind: "checkin" as const, data: ci, date: new Date(ci.scheduledAt) })),
+      ...hangouts.map((h) => ({ kind: "hangout" as const, data: h, date: new Date(h.date) })),
+    ].sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const groups = new Map<string, { label: string; items: ListItem[] }>();
+    for (const it of items) {
+      const key = format(it.date, "yyyy-MM");
+      const label = format(it.date, "MMM yyyy").toUpperCase();
+      if (!groups.has(key)) groups.set(key, { label, items: [] });
+      groups.get(key)!.items.push(it);
+    }
+    return Array.from(groups.values());
+  }, [checkIns, hangouts]);
+
   // ── empty state ──────────────────────────────────────────────────────────
 
   const emptyState = (
@@ -152,82 +165,123 @@ export function CalendarView() {
         )}
       </div>
 
-      {/* Mobile: scrollable list */}
+      {/* Mobile: month-grouped cards */}
       <div className="md:hidden">
         {events.length === 0 ? emptyState : (
-          <ul className="divide-y">
-            {/* check-ins */}
-            {checkIns.map((ci) => {
-              const name = [ci.contact.firstName, ci.contact.lastName].filter(Boolean).join(" ");
-              const overdue = isPast(new Date(ci.scheduledAt));
-              const color = getAvatarColor(name);
-              const icon = checkInIcon(ci);
-              return (
-                <li key={`ci-${ci.id}`}>
-                  <button
-                    onClick={() => setSelected({ kind: "checkin", data: ci })}
-                    className="w-full flex items-center gap-3 px-4 py-4 text-left active:bg-accent/40 transition-colors"
-                  >
-                    <div
-                      className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: color.bg }}
-                    >
-                      <span className="text-sm font-bold" style={{ color: color.fg }}>
-                        {ci.contact.firstName[0]}{ci.contact.lastName?.[0] ?? ""}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold truncate">{icon} {name}</p>
-                      <p className={`text-sm font-semibold ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
-                        {dateLabel(ci.scheduledAt)}
-                      </p>
-                    </div>
-                    {overdue && <Badge variant="destructive" className="shrink-0 text-xs rounded-full">Overdue</Badge>}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-muted-foreground shrink-0">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </button>
-                </li>
-              );
-            })}
-            {/* hangouts */}
-            {hangouts.map((h) => {
-              const name = [h.contact.firstName, h.contact.lastName].filter(Boolean).join(" ");
-              const color = getAvatarColor(name);
-              const icon = hangoutIcon(h);
-              return (
-                <li key={`h-${h.id}`}>
-                  <button
-                    onClick={() => setSelected({ kind: "hangout", data: h })}
-                    className="w-full flex items-center gap-3 px-4 py-4 text-left active:bg-accent/40 transition-colors"
-                  >
-                    <div
-                      className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: color.bg }}
-                    >
-                      <span className="text-sm font-bold" style={{ color: color.fg }}>
-                        {h.contact.firstName[0]}{h.contact.lastName?.[0] ?? ""}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold truncate">{icon} {name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(h.date), "EEE, MMM d 'at' h:mm a")}
-                        {h.type === "in-person" && h.locationName ? ` · ${h.locationName}` : ""}
-                        {h.type === "digital" && h.platform ? ` · ${h.platform}` : ""}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="shrink-0 text-xs" style={{ borderRadius: "8px" }}>
-                      {h.status}
-                    </Badge>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-muted-foreground shrink-0">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="flex flex-col gap-4">
+            {monthGroups.map((group) => (
+              <div
+                key={group.label}
+                className="bg-white overflow-hidden"
+                style={{
+                  border: "2px solid #1F2024",
+                  borderRadius: "10px",
+                  boxShadow: "2px 2px 0 #1F2024",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#1F2024",
+                    color: "#fff",
+                    fontFamily: "var(--font-pixel-display), ui-monospace, monospace",
+                    fontSize: "11px",
+                    letterSpacing: "0.12em",
+                    padding: "9px 14px",
+                  }}
+                >
+                  {group.label}
+                </div>
+                <ul>
+                  {group.items.map((it, idx) => {
+                    const isLast = idx === group.items.length - 1;
+                    const contact = it.data.contact;
+                    const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
+                    const dot = getAvatarColor(name).bg;
+                    const days = differenceInCalendarDays(it.date, new Date());
+                    const overdue = days < 0;
+                    const upcoming = days >= 0 && days <= 3;
+                    let trailing: React.ReactNode;
+                    if (overdue) {
+                      trailing = (
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            fontSize: "11px",
+                            padding: "2px 8px",
+                            border: "2px solid #1F2024",
+                            borderRadius: "8px",
+                            background: "#FF6B5E",
+                            color: "#fff",
+                            boxShadow: "1px 1px 0 #1F2024",
+                            flexShrink: 0,
+                          }}
+                        >
+                          Overdue
+                        </span>
+                      );
+                    } else if (upcoming) {
+                      trailing = (
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            fontSize: "11px",
+                            padding: "2px 8px",
+                            border: "2px solid #1F2024",
+                            borderRadius: "8px",
+                            background: "#FFE93E",
+                            color: "#1F2024",
+                            boxShadow: "1px 1px 0 #1F2024",
+                            flexShrink: 0,
+                          }}
+                        >
+                          Upcoming
+                        </span>
+                      );
+                    } else {
+                      trailing = (
+                        <span style={{ fontSize: "11px", color: "#666666", flexShrink: 0 }}>
+                          in {days} days
+                        </span>
+                      );
+                    }
+                    return (
+                      <li
+                        key={`${it.kind}-${it.data.id}`}
+                        style={{ borderBottom: isLast ? "none" : "1px solid #E8E8E8" }}
+                      >
+                        <button
+                          onClick={() =>
+                            setSelected(
+                              it.kind === "checkin"
+                                ? { kind: "checkin", data: it.data }
+                                : { kind: "hangout", data: it.data },
+                            )
+                          }
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-accent/40 transition-colors"
+                        >
+                          <span
+                            style={{
+                              width: "10px",
+                              height: "10px",
+                              borderRadius: "9999px",
+                              border: "1.5px solid #1F2024",
+                              background: dot,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span className="flex-1 min-w-0 font-bold text-sm truncate">{name}</span>
+                          <span style={{ fontSize: "12px", color: "#666666", flexShrink: 0 }}>
+                            {format(it.date, "MMM d")}
+                          </span>
+                          {trailing}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
