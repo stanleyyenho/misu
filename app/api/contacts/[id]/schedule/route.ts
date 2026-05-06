@@ -79,6 +79,36 @@ export async function PUT(
   return NextResponse.json(schedule);
 }
 
+// PATCH: update only nextCheckIn (raincheck flow)
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id: contactId } = await params;
+  const owned = await prisma.contact.findFirst({ where: { id: contactId, userId: user.id } });
+  if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const { nextCheckIn } = await request.json();
+  if (!nextCheckIn) return NextResponse.json({ error: "nextCheckIn is required" }, { status: 400 });
+
+  const date = new Date(nextCheckIn);
+  if (isNaN(date.getTime())) return NextResponse.json({ error: "Invalid date" }, { status: 400 });
+
+  const schedule = await prisma.checkInSchedule.update({
+    where: { contactId },
+    data: { nextCheckIn: date },
+  });
+
+  // Update the pending check-in to match
+  await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
+  await prisma.checkIn.create({ data: { contactId, scheduledAt: date, status: "pending" } });
+
+  return NextResponse.json(schedule);
+}
+
 export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
