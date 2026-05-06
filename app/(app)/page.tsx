@@ -352,11 +352,14 @@ export default function DashboardPage() {
             </div>
           ) : recurringSchedules.length === 0 ? (
             <div
-              className="rounded-[10px] border-2 border-[#1F2024] bg-card p-5 flex flex-col items-center gap-2 text-center"
+              className="rounded-[10px] border-2 border-[#1F2024] bg-card p-6 flex flex-col items-center gap-3 text-center"
               style={{ boxShadow: "4px 4px 0 #1F2024" }}
             >
-              <SunnyDayIllustration size={56} />
-              <p className="text-sm text-muted-foreground">No recurring hangouts set up yet.</p>
+              <SunnyDayIllustration size={64} />
+              <div>
+                <p className="font-bold">all caught up!</p>
+                <p className="text-sm text-muted-foreground mt-0.5">No recurring hangouts set up yet.</p>
+              </div>
               <button
                 onClick={() => setAddRecurringOpen(true)}
                 className="text-sm font-bold underline underline-offset-2"
@@ -423,9 +426,20 @@ export default function DashboardPage() {
             <div className="h-[72px] rounded-[10px] border-2 border-[#1F2024] bg-secondary animate-pulse" style={{ boxShadow: "4px 4px 0 #1F2024" }} />
           ) : oneTimeHangouts.length === 0 ? (
             <div
-              className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center"
+              className="rounded-[10px] border-2 border-[#1F2024] bg-card p-6 flex flex-col items-center gap-3 text-center"
+              style={{ boxShadow: "4px 4px 0 #1F2024" }}
             >
-              <p className="text-sm text-muted-foreground">No one-time hangouts coming up.</p>
+              <SunnyDayIllustration size={64} />
+              <div>
+                <p className="font-bold">all caught up!</p>
+                <p className="text-sm text-muted-foreground mt-0.5">No one-time hangouts coming up.</p>
+              </div>
+              <button
+                onClick={() => setAddOneTimeOpen(true)}
+                className="text-sm font-bold underline underline-offset-2"
+              >
+                Set one up
+              </button>
             </div>
           ) : (
             <ul className="space-y-3">
