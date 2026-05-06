@@ -57,7 +57,7 @@ export default function MarketingPage() {
           {/* Hero mini-UI mockup */}
           <div className={styles.heroIllo}>
             <div className={`${styles.illoTile} ${styles.large}`}>
-              <FriendsIllo />
+              <OneTimeIllo />
             </div>
             <div className={styles.avatarStack}>
               <div className={styles.avatarRow}>
@@ -353,36 +353,33 @@ function MisuMark({ size }: { size: number }) {
   );
 }
 
-function FriendsIllo() {
+function OneTimeIllo() {
   return (
-    <svg width="130" height="126" viewBox="0 0 104 100" fill="none">
+    <svg width="100%" height="100%" viewBox="0 0 120 116" fill="none" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <pattern id="fd" width="6" height="6" patternUnits="userSpaceOnUse">
-          <circle cx="1" cy="1" r="0.7" fill="#1F2024" opacity="0.18" />
+        <pattern id="ot-d" width="6" height="6" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="0.7" fill="#1F2024" opacity="0.16" />
         </pattern>
-        <pattern id="fh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <pattern id="ot-ch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1="0" y1="0" x2="0" y2="5" stroke="#1F2024" strokeWidth="1" opacity="0.22" />
         </pattern>
       </defs>
-      <rect width="104" height="100" fill="url(#fd)" />
-      <circle cx="26" cy="22" r="12" fill="#BCE8DC" stroke="#1F2024" strokeWidth="2" />
-      <circle cx="22" cy="21" r="1.8" fill="#1F2024" /><circle cx="30" cy="21" r="1.8" fill="#1F2024" />
-      <path d="M22 26 Q26 29 30 26" stroke="#1F2024" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <rect x="16" y="36" width="20" height="24" rx="4" fill="#FFFFFF" stroke="#1F2024" strokeWidth="2" />
-      <rect x="16" y="36" width="20" height="24" rx="4" fill="url(#fh)" />
-      <rect x="18" y="58" width="7" height="18" rx="3" fill="#1F2024" />
-      <rect x="27" y="58" width="7" height="18" rx="3" fill="#1F2024" />
-      <path d="M36 44 Q50 38 54 34" stroke="#1F2024" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="78" cy="22" r="12" fill="#BCE8DC" stroke="#1F2024" strokeWidth="2" />
-      <circle cx="74" cy="21" r="1.8" fill="#1F2024" /><circle cx="82" cy="21" r="1.8" fill="#1F2024" />
-      <path d="M74 26 Q78 29 82 26" stroke="#1F2024" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <rect x="68" y="36" width="20" height="24" rx="4" fill="#FFFFFF" stroke="#1F2024" strokeWidth="2" />
-      <rect x="68" y="36" width="20" height="24" rx="4" fill="url(#fh)" />
-      <rect x="70" y="58" width="7" height="18" rx="3" fill="#1F2024" />
-      <rect x="79" y="58" width="7" height="18" rx="3" fill="#1F2024" />
-      <path d="M68 44 Q54 38 50 34" stroke="#1F2024" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M52 56 C52 56 40 48 40 41 C40 36.5 44 34 48 36 C50 37 52 39 52 39 C52 39 54 37 56 36 C60 34 64 36.5 64 41 C64 48 52 56 52 56Z" fill="#BCE8DC" stroke="#1F2024" strokeWidth="2" strokeLinejoin="round" />
-      <circle cx="46" cy="40" r="2.5" fill="#FFFFFF" opacity="0.7" />
+      <rect width="120" height="116" fill="url(#ot-d)" />
+      <g transform="rotate(-6 60 58)">
+        <rect x="34" y="26" width="56" height="68" rx="4" fill="#FF6B9D" stroke="#1F2024" strokeWidth="2" />
+        <rect x="34" y="26" width="56" height="68" rx="4" fill="url(#ot-ch)" />
+        <rect x="30" y="22" width="56" height="68" rx="4" fill="#FFFFFF" stroke="#1F2024" strokeWidth="2.5" />
+        <rect x="30" y="22" width="56" height="14" rx="4" fill="#1F2024" />
+        <circle cx="42" cy="29" r="2" fill="#FFFFFF" />
+        <circle cx="74" cy="29" r="2" fill="#FFFFFF" />
+        <text x="58" y="72" textAnchor="middle" fontFamily="Bricolage Grotesque, sans-serif" fontSize="30" fontWeight="700" fill="#1F2024">14</text>
+        <line x1="40" y1="80" x2="76" y2="80" stroke="#1F2024" strokeWidth="1.5" opacity="0.4" />
+      </g>
+      <g transform="translate(94 28)">
+        <path d="M0 -10 L2.5 -2.5 L10 0 L2.5 2.5 L0 10 L-2.5 2.5 L-10 0 L-2.5 -2.5 Z" fill="#FFE93E" stroke="#1F2024" strokeWidth="2" strokeLinejoin="round" />
+      </g>
+      <circle cx="22" cy="92" r="3" fill="#BCE8DC" stroke="#1F2024" strokeWidth="1.5" />
+      <circle cx="100" cy="86" r="2.5" fill="#1F2024" />
     </svg>
   );
 }
