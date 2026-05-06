@@ -287,6 +287,12 @@ export function CalendarView() {
                     const contact = it.data.contact;
                     const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
                     const dot = getAvatarColor(name).bg;
+                    const eventKind: EventKind =
+                      it.kind === "checkin"
+                        ? checkInKind(it.data)
+                        : it.kind === "hangout"
+                        ? hangoutKind(it.data)
+                        : "recurring";
                     const days = differenceInCalendarDays(it.date, new Date());
                     const overdue = days < 0;
                     const upcoming = days >= 0 && days <= 3;
@@ -357,7 +363,12 @@ export function CalendarView() {
                               flexShrink: 0,
                             }}
                           />
-                          <span className="flex-1 min-w-0 font-bold text-sm truncate">{name}</span>
+                          <span className="flex-1 min-w-0 font-bold text-sm truncate flex items-center gap-1.5">
+                            <span style={{ color: "#666666", flexShrink: 0, display: "inline-flex" }} aria-hidden="true">
+                              <EventIcon kind={eventKind} size={13} />
+                            </span>
+                            <span className="truncate">{name}</span>
+                          </span>
                           <span style={{ fontSize: "12px", color: "#666666", flexShrink: 0 }}>
                             {format(it.date, "MMM d")}
                           </span>
