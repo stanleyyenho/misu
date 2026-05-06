@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "misu — stay genuinely close",
+  title: "misu — stay in touch",
   description:
-    "misu helps you actually show up for the people who matter — with AI-crafted messages, hangout planning, and smart cadences that fit your life.",
+    "misu helps you be with the people who matter - with AI-crafted messages, hangout planning, and smart cadences that fit your life.",
 };
 
 const APP_URL = "https://app.misu.care";
@@ -31,13 +31,13 @@ export default function MarketingPage() {
           <div className={styles.heroEyebrow}>your relationship co-pilot</div>
 
           <h1 className={styles.heroHeading}>
-            actually show up for
+            be with
             <br />
             the people who <span className={styles.accentWord}>matter</span>
           </h1>
 
           <p className={styles.heroSub}>
-            misu helps you stay genuinely close — with AI-crafted check-ins,
+            misu helps you stay close - with AI-crafted check-ins,
             hangout planning, and smart cadences that fit around your life.
           </p>
 
@@ -106,7 +106,7 @@ export default function MarketingPage() {
           <h2 className={styles.sectionHeading}>thoughtful by design</h2>
 
           <div className={styles.featureGrid}>
-            {/* Card 1 — AI messages */}
+            {/* Card 1 - AI messages */}
             <div className={`${styles.featureCard} ${styles.accentCard}`}>
               <div className={styles.featureIcon}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -115,7 +115,7 @@ export default function MarketingPage() {
               </div>
               <div className={styles.featureTitle}>AI writes the message</div>
               <div className={styles.featureBody}>
-                misu drafts a warm, natural check-in based on what you know about the person. Review it, tweak it, send it — or let it go automatically.
+                misu drafts a warm, natural check-in based on what you know about the person. Review it, tweak it, send it - or let it go automatically.
               </div>
               <div className={styles.freqRow}>
                 <div className={`${styles.freqChip} ${styles.freqChipActive}`}>casual</div>
@@ -124,7 +124,7 @@ export default function MarketingPage() {
               </div>
             </div>
 
-            {/* Card 2 — Hangout planning */}
+            {/* Card 2 - Hangout planning */}
             <div className={styles.featureCard}>
               <div className={styles.featureIcon}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -142,7 +142,7 @@ export default function MarketingPage() {
               </div>
             </div>
 
-            {/* Card 3 — Cadence */}
+            {/* Card 3 - Cadence */}
             <div className={`${styles.featureCard} ${styles.yellowCard}`}>
               <div className={styles.featureIcon}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -155,7 +155,7 @@ export default function MarketingPage() {
               </div>
             </div>
 
-            {/* Card 4 — Multi-platform */}
+            {/* Card 4 - Multi-platform */}
             <div className={styles.featureCard}>
               <div className={styles.featureIcon}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2024" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -164,7 +164,7 @@ export default function MarketingPage() {
               </div>
               <div className={styles.featureTitle}>send where they are</div>
               <div className={styles.featureBody}>
-                SMS, iMessage, WhatsApp, Instagram, Messenger — misu meets each person on the platform they actually use.
+                SMS, iMessage, WhatsApp, Instagram, Messenger - misu meets each person on the platform they actually use.
               </div>
               <div className={styles.formatPills}>
                 <span className={styles.formatPill} style={{ background: "#BCE8DC" }}>iMessage</span>
@@ -188,7 +188,7 @@ export default function MarketingPage() {
               <div>
                 <div className={styles.stepTitle}>add your people</div>
                 <div className={styles.stepDesc}>
-                  Add the friends and family you want to stay close to. Set their preferred platform — iMessage, SMS, WhatsApp, and more.
+                  Add the friends and family you want to stay close to. Set their preferred platform - iMessage, SMS, WhatsApp, and more.
                 </div>
               </div>
             </div>
@@ -229,7 +229,7 @@ export default function MarketingPage() {
               <div>
                 <div className={styles.stepTitle}>misu drafts it, you send it</div>
                 <div className={styles.stepDesc}>
-                  When it&apos;s time, misu generates a personal message or hangout invite. Review, approve, and send — or let it go automatically.
+                  When it&apos;s time, misu generates a personal message or hangout invite. Review, approve, and send - or let it go automatically.
                 </div>
               </div>
             </div>
@@ -264,7 +264,9 @@ export default function MarketingPage() {
             <span className={styles.footerWordmarkText}>misu</span>
           </a>
           <span className={styles.footerNote}>
-            your relationship co-pilot — AI messages, hangout planning, and smart cadences.
+            <a href="/privacy" className={styles.footerLink}>Privacy Policy</a>
+            {" · "}
+            <a href="/terms" className={styles.footerLink}>Terms of Service</a>
           </span>
         </div>
       </footer>
