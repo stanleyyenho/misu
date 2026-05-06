@@ -11,12 +11,18 @@ export async function GET() {
     const contacts = await prisma.contact.findMany({
       where: { userId: user.id },
       include: {
-        schedule: true,
+        schedules: true,
         groups: { select: { groupId: true } },
       },
       orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
     });
-    return NextResponse.json(contacts);
+    // Expose check-in schedule as `schedule` for backward compat with client components
+    return NextResponse.json(
+      contacts.map((c) => ({
+        ...c,
+        schedule: c.schedules.find((s) => s.scheduleType === "check-in") ?? null,
+      }))
+    );
   } catch (err) {
     console.error("[GET /api/contacts]", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });

@@ -17,12 +17,12 @@ export async function GET() {
       recent,
       profile,
     ] = await Promise.all([
-      // Recurring hangout schedules (cadenceMode != prompt)
+      // Recurring hangout schedules
       prisma.checkInSchedule.findMany({
         where: {
           contact: { userId: user.id },
           isActive: true,
-          cadenceMode: { not: "prompt" },
+          scheduleType: "hangout",
         },
         select: {
           id: true,
@@ -64,7 +64,8 @@ export async function GET() {
               phone: true,
               messagingPlatform: true,
               notes: true,
-              schedule: {
+              schedules: {
+                where: { scheduleType: "check-in" },
                 select: {
                   tone: true,
                   checkInType: true,
@@ -149,10 +150,11 @@ export async function GET() {
       prisma.userProfile.findUnique({ where: { userId: user.id } }),
     ]);
 
-    // Filter upcoming to only prompt-mode check-ins for the messages section
-    const messageCheckIns = upcoming.filter(
-      (ci) => !ci.contact.schedule || ci.contact.schedule.cadenceMode === "prompt"
-    );
+    // Filter and transform: expose contact.schedule (singular) for backward compat
+    const messageCheckIns = upcoming.map((ci) => ({
+      ...ci,
+      contact: { ...ci.contact, schedule: ci.contact.schedules[0] ?? null },
+    }));
 
     return NextResponse.json({
       recurringSchedules,

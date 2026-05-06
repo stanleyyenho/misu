@@ -152,6 +152,7 @@ export function ScheduleForm({
       }
 
       const effectiveCadenceMode = sectionMode === "check-in" ? "prompt" : cadenceMode;
+      const scheduleType = sectionMode === "check-in" ? "check-in" : "hangout";
 
       let defaultHangout: Record<string, unknown> | null = null;
       if (effectiveCadenceMode === "perpetual") {
@@ -170,6 +171,7 @@ export function ScheduleForm({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          scheduleType,
           frequencyDays: Number(frequencyDays),
           frequencyJitterDays: 0,
           tone,
@@ -193,9 +195,10 @@ export function ScheduleForm({
   }
 
   async function handleRemove() {
+    const scheduleType = sectionMode === "check-in" ? "check-in" : "hangout";
     setSaving(true);
     try {
-      await fetch(`/api/contacts/${contactId}/schedule`, { method: "DELETE" });
+      await fetch(`/api/contacts/${contactId}/schedule?scheduleType=${scheduleType}`, { method: "DELETE" });
       toast.info("Cadence removed");
       setFrequencyDays("");
       onSaved?.();

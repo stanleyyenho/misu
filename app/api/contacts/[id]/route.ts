@@ -14,13 +14,17 @@ export async function GET(
   const contact = await prisma.contact.findFirst({
     where: { id, userId: user.id },
     include: {
-      schedule: true,
+      schedules: true,
       checkIns: { orderBy: { scheduledAt: "asc" } },
       hangouts: { orderBy: { date: "desc" }, take: 10 },
     },
   });
   if (!contact) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(contact);
+  // Expose check-in schedule as `schedule` for backward compat with client components
+  return NextResponse.json({
+    ...contact,
+    schedule: contact.schedules.find((s) => s.scheduleType === "check-in") ?? null,
+  });
 }
 
 export async function PATCH(

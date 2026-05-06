@@ -15,8 +15,9 @@ export async function POST(
   if (!hangout) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const now = new Date();
-  const schedule = await prisma.checkInSchedule.findUnique({
-    where: { contactId: hangout.contactId },
+  // Find the hangout-specific schedule (not the check-in message schedule)
+  const hangoutSchedule = await prisma.checkInSchedule.findFirst({
+    where: { contactId: hangout.contactId, scheduleType: "hangout" },
   });
 
   await prisma.$transaction(async (tx) => {
@@ -25,15 +26,13 @@ export async function POST(
       data: { contactId: hangout.contactId, scheduledAt: hangout.date, status: "skipped" },
     });
 
-    if (schedule?.isActive) {
-      const nextCheckIn = computeJitteredNextDate(schedule, now);
+    // Advance the hangout schedule's next date.
+    // Check-in message pending rows are managed independently — don't touch them.
+    if (hangoutSchedule?.isActive) {
+      const nextCheckIn = computeJitteredNextDate(hangoutSchedule, now);
       await tx.checkInSchedule.update({
-        where: { contactId: hangout.contactId },
+        where: { id: hangoutSchedule.id },
         data: { lastCheckIn: now, nextCheckIn },
-      });
-      await tx.checkIn.deleteMany({ where: { contactId: hangout.contactId, status: "pending" } });
-      await tx.checkIn.create({
-        data: { contactId: hangout.contactId, scheduledAt: nextCheckIn, status: "pending" },
       });
     }
   });

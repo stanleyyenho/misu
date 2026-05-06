@@ -16,6 +16,7 @@ export async function PUT(
 
   const body = await request.json();
   const {
+    scheduleType = "check-in",  // "check-in" | "hangout"
     frequencyDays,
     frequencyJitterDays = 0,
     tone = "casual",
@@ -37,9 +38,10 @@ export async function PUT(
   const nextCheckIn = addDays(new Date(), Number(frequencyDays) + jitterOffset);
 
   const schedule = await prisma.checkInSchedule.upsert({
-    where: { contactId },
+    where: { contactId_scheduleType: { contactId, scheduleType } },
     create: {
       contactId,
+      scheduleType,
       frequencyDays,
       frequencyJitterDays: jitter,
       catchupFormats: "[]",
@@ -70,11 +72,14 @@ export async function PUT(
     },
   });
 
-  // Replace any pending check-in with the new schedule
-  await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
-  await prisma.checkIn.create({
-    data: { contactId, scheduledAt: nextCheckIn, status: "pending" },
-  });
+  // Only check-in schedules drive pending CheckIn rows.
+  // Hangout schedules are processed purely by the cron via nextCheckIn.
+  if (scheduleType === "check-in") {
+    await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
+    await prisma.checkIn.create({
+      data: { contactId, scheduledAt: nextCheckIn, status: "pending" },
+    });
+  }
 
   return NextResponse.json(schedule);
 }
@@ -91,26 +96,33 @@ export async function PATCH(
   const owned = await prisma.contact.findFirst({ where: { id: contactId, userId: user.id } });
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { nextCheckIn } = await request.json();
+  const { nextCheckIn, scheduleType = "hangout" } = await request.json();
   if (!nextCheckIn) return NextResponse.json({ error: "nextCheckIn is required" }, { status: 400 });
 
   const date = new Date(nextCheckIn);
   if (isNaN(date.getTime())) return NextResponse.json({ error: "Invalid date" }, { status: 400 });
 
-  const schedule = await prisma.checkInSchedule.update({
-    where: { contactId },
+  const schedule = await prisma.checkInSchedule.findFirst({
+    where: { contactId, scheduleType },
+  });
+  if (!schedule) return NextResponse.json({ error: "Schedule not found" }, { status: 404 });
+
+  await prisma.checkInSchedule.update({
+    where: { id: schedule.id },
     data: { nextCheckIn: date },
   });
 
-  // Update the pending check-in to match
-  await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
-  await prisma.checkIn.create({ data: { contactId, scheduledAt: date, status: "pending" } });
+  // Only manage CheckIn rows for check-in schedules
+  if (scheduleType === "check-in") {
+    await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
+    await prisma.checkIn.create({ data: { contactId, scheduledAt: date, status: "pending" } });
+  }
 
-  return NextResponse.json(schedule);
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(
-  _req: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getUser();
@@ -120,12 +132,23 @@ export async function DELETE(
   const owned = await prisma.contact.findFirst({ where: { id: contactId, userId: user.id } });
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const { searchParams } = new URL(request.url);
+  const scheduleType = searchParams.get("scheduleType") ?? "check-in";
+
+  const schedule = await prisma.checkInSchedule.findFirst({
+    where: { contactId, scheduleType },
+  });
+  if (!schedule) return NextResponse.json({ success: true }); // already gone
+
   await prisma.checkInSchedule.update({
-    where: { contactId },
+    where: { id: schedule.id },
     data: { isActive: false },
   });
 
-  await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
+  // Only remove pending CheckIn rows for check-in schedules
+  if (scheduleType === "check-in") {
+    await prisma.checkIn.deleteMany({ where: { contactId, status: "pending" } });
+  }
 
   return NextResponse.json({ success: true });
 }

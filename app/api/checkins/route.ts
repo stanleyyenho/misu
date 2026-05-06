@@ -30,7 +30,8 @@ export async function GET(request: Request) {
             phone: true,
             messagingPlatform: true,
             notes: true,
-            schedule: {
+            schedules: {
+              where: { scheduleType: "check-in" },
               select: {
                 tone: true,
                 checkInType: true,
@@ -46,7 +47,12 @@ export async function GET(request: Request) {
       ...(limit ? { take: limit } : {}),
     });
 
-    return NextResponse.json(checkIns);
+    return NextResponse.json(
+      checkIns.map((ci) => ({
+        ...ci,
+        contact: { ...ci.contact, schedule: ci.contact.schedules[0] ?? null },
+      }))
+    );
   } catch (err) {
     console.error("[GET /api/checkins]", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
