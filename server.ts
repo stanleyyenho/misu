@@ -2,7 +2,6 @@ import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
 import cron from "node-cron";
-import { endOfDay } from "date-fns";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -11,37 +10,20 @@ const port = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-app.prepare().then(async () => {
-  // Dynamically import prisma and webpush after Next.js is ready
-  const { prisma } = await import("./lib/prisma");
-  const { sendPushToAll } = await import("./lib/webpush");
-
-  // Run every day at 8:00 AM
+app.prepare().then(() => {
   cron.schedule("0 8 * * *", async () => {
-    console.log("[cron] Checking for due check-ins...");
+    console.log("[cron] Triggering daily notifications...");
     try {
-      const dueToday = await prisma.checkIn.findMany({
-        where: {
-          status: "pending",
-          scheduledAt: { lte: endOfDay(new Date()) },
-        },
-        include: { contact: true },
-      });
-
-      console.log(`[cron] Found ${dueToday.length} check-in(s) due today`);
-
-      for (const checkIn of dueToday) {
-        const name = [checkIn.contact.firstName, checkIn.contact.lastName]
-          .filter(Boolean)
-          .join(" ");
-        await sendPushToAll({
-          title: `Time to check in with ${name}`,
-          body: "Tap to open Misu and log your catch-up",
-          url: `/contacts/${checkIn.contactId}`,
-        });
+      const secret = process.env.CRON_SECRET;
+      if (!secret) {
+        console.warn("[cron] CRON_SECRET not set, skipping");
+        return;
       }
+      const res = await fetch(`http://localhost:${port}/api/cron/notify?secret=${secret}`);
+      const data = await res.json();
+      console.log("[cron] Done:", data);
     } catch (err) {
-      console.error("[cron] Error sending notifications:", err);
+      console.error("[cron] Error:", err);
     }
   });
 

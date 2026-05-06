@@ -2,7 +2,7 @@ import { subDays, startOfDay, endOfDay } from "date-fns";
 import { format } from "date-fns";
 import { prisma } from "./prisma";
 import { sendSms } from "./twilio";
-import { sendPushToAll } from "./webpush";
+import { sendPushToUser } from "./webpush";
 
 const PLATFORM_LABELS: Record<string, string> = {
   facetime: "FaceTime",
@@ -36,40 +36,34 @@ export async function seedPendingReminders(): Promise<number> {
       { offsetDays: 0, label: "day-of" },
     ];
 
+    const creates = [];
+
     for (const slot of slots) {
       const sendAt =
         slot.offsetDays === 0
-          ? startOfDay(hangout.date) // day-of: fires on the morning cron of that day
+          ? startOfDay(hangout.date)
           : subDays(hangout.date, slot.offsetDays);
 
-      if (sendAt <= now) continue; // already past, skip
+      if (sendAt <= now) continue;
 
-      // SMS to contact
       if (hangout.contact.phone) {
-        await prisma.hangoutReminder.create({
-          data: {
-            hangoutId: hangout.id,
-            sendAt,
-            channel: "sms",
-            recipient: "contact",
-            status: "scheduled",
-          },
-        });
+        creates.push(
+          prisma.hangoutReminder.create({
+            data: { hangoutId: hangout.id, sendAt, channel: "sms", recipient: "contact", status: "scheduled" },
+          })
+        );
         seeded++;
       }
 
-      // Push to user
-      await prisma.hangoutReminder.create({
-        data: {
-          hangoutId: hangout.id,
-          sendAt,
-          channel: "push",
-          recipient: "user",
-          status: "scheduled",
-        },
-      });
+      creates.push(
+        prisma.hangoutReminder.create({
+          data: { hangoutId: hangout.id, sendAt, channel: "push", recipient: "user", status: "scheduled" },
+        })
+      );
       seeded++;
     }
+
+    await Promise.all(creates);
   }
 
   return seeded;
@@ -111,15 +105,14 @@ export async function fireDueReminders(): Promise<number> {
       if (reminder.channel === "sms" && hangout.contact.phone) {
         const isToday = startOfDay(reminder.sendAt).getTime() === startOfDay(hangout.date).getTime();
         const body = isToday
-          ? `Reminder: your hangout with is today${locationDetail} — ${dateStr}. See you there!`
+          ? `Reminder: your hangout is today${locationDetail} — ${dateStr}. See you there!`
           : `Reminder: you have a hangout coming up${locationDetail} on ${dateStr}.`;
-
         await sendSms(hangout.contact.phone, body);
       }
 
       if (reminder.channel === "push") {
         const isToday = startOfDay(reminder.sendAt).getTime() === startOfDay(hangout.date).getTime();
-        await sendPushToAll({
+        await sendPushToUser(hangout.userId, {
           title: isToday
             ? `Hangout with ${contactName} is today!`
             : `Hangout with ${contactName} in 3 days`,
