@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { format, isPast, differenceInCalendarDays } from "date-fns";
 import { CalendarEventModal, type CheckInDetail, type HangoutDetail } from "@/components/CalendarEventModal";
+import { RecurringHangoutDetailModal, type RecurringSchedule } from "@/components/RecurringHangoutDetailModal";
 import { SunnyDayIllustration } from "./illustrations/SunnyDayIllustration";
 import { getAvatarColor } from "@/lib/avatar-color";
 
@@ -13,7 +14,8 @@ import { getAvatarColor } from "@/lib/avatar-color";
 
 type SelectedEvent =
   | { kind: "checkin"; data: CheckInDetail }
-  | { kind: "hangout"; data: HangoutDetail };
+  | { kind: "hangout"; data: HangoutDetail }
+  | { kind: "schedule"; data: RecurringSchedule };
 
 // ─── colors ───────────────────────────────────────────────────────────────────
 
@@ -93,12 +95,14 @@ function eventIconSvg(kind: EventKind): string {
 export function CalendarView() {
   const [checkIns, setCheckIns] = useState<CheckInDetail[]>([]);
   const [hangouts, setHangouts] = useState<HangoutDetail[]>([]);
+  const [schedules, setSchedules] = useState<RecurringSchedule[]>([]);
   const [selected, setSelected] = useState<SelectedEvent | null>(null);
 
   const load = useCallback(async () => {
-    const [ciRes, hRes] = await Promise.all([
+    const [ciRes, hRes, sRes] = await Promise.all([
       fetch("/api/checkins?status=pending"),
       fetch("/api/hangouts"),
+      fetch("/api/hangout-schedules"),
     ]);
     if (ciRes.ok) setCheckIns(await ciRes.json());
     if (hRes.ok) {
@@ -106,6 +110,7 @@ export function CalendarView() {
       // Only show future, non-completed/skipped hangouts on the calendar
       setHangouts(all.filter((h) => !["completed", "skipped"].includes(h.status) && new Date(h.date) >= new Date(Date.now() - 86400000)));
     }
+    if (sRes.ok) setSchedules(await sRes.json());
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -139,18 +144,44 @@ export function CalendarView() {
     };
   });
 
-  const events = [...checkInEvents, ...hangoutEvents];
+  // Project active recurring hangout schedules — but skip any whose next
+  // occurrence has already been materialized into a Hangout for the same contact.
+  const materializedKey = (contactId: string, date: Date) =>
+    `${contactId}|${format(date, "yyyy-MM-dd")}`;
+  const materialized = new Set(
+    hangouts.map((h) => materializedKey(h.contact.id, new Date(h.date))),
+  );
+  const projectedSchedules = schedules.filter(
+    (s) => !materialized.has(materializedKey(s.contactId, new Date(s.nextCheckIn))),
+  );
+
+  const scheduleEvents = projectedSchedules.map((s) => {
+    const name = [s.contact.firstName, s.contact.lastName].filter(Boolean).join(" ");
+    return {
+      id: `s-${s.id}`,
+      title: name,
+      date: new Date(s.nextCheckIn).toISOString().split("T")[0],
+      extendedProps: { kind: "schedule" as const, data: s, eventKind: "recurring" as EventKind },
+      backgroundColor: "oklch(0.60 0.12 290)",
+      borderColor: "transparent",
+      textColor: "oklch(0.985 0.006 80)",
+    };
+  });
+
+  const events = [...checkInEvents, ...hangoutEvents, ...scheduleEvents];
 
   // ── unified mobile list: combine, sort, group by month ──────────────────
 
   type ListItem =
     | { kind: "checkin"; data: CheckInDetail; date: Date }
-    | { kind: "hangout"; data: HangoutDetail; date: Date };
+    | { kind: "hangout"; data: HangoutDetail; date: Date }
+    | { kind: "schedule"; data: RecurringSchedule; date: Date };
 
   const monthGroups = useMemo(() => {
     const items: ListItem[] = [
       ...checkIns.map((ci) => ({ kind: "checkin" as const, data: ci, date: new Date(ci.scheduledAt) })),
       ...hangouts.map((h) => ({ kind: "hangout" as const, data: h, date: new Date(h.date) })),
+      ...projectedSchedules.map((s) => ({ kind: "schedule" as const, data: s, date: new Date(s.nextCheckIn) })),
     ].sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const groups = new Map<string, { label: string; items: ListItem[] }>();
@@ -161,7 +192,7 @@ export function CalendarView() {
       groups.get(key)!.items.push(it);
     }
     return Array.from(groups.values());
-  }, [checkIns, hangouts]);
+  }, [checkIns, hangouts, schedules]);
 
   // ── empty state ──────────────────────────────────────────────────────────
 
@@ -213,9 +244,10 @@ export function CalendarView() {
               return { html };
             }}
             eventClick={(info) => {
-              const ep = info.event.extendedProps as { kind: "checkin" | "hangout"; data: CheckInDetail | HangoutDetail };
+              const ep = info.event.extendedProps as { kind: "checkin" | "hangout" | "schedule"; data: CheckInDetail | HangoutDetail | RecurringSchedule };
               if (ep.kind === "checkin") setSelected({ kind: "checkin", data: ep.data as CheckInDetail });
-              else setSelected({ kind: "hangout", data: ep.data as HangoutDetail });
+              else if (ep.kind === "hangout") setSelected({ kind: "hangout", data: ep.data as HangoutDetail });
+              else setSelected({ kind: "schedule", data: ep.data as RecurringSchedule });
             }}
             height="auto"
           />
@@ -308,13 +340,11 @@ export function CalendarView() {
                         style={{ borderBottom: isLast ? "none" : "1px solid #E8E8E8" }}
                       >
                         <button
-                          onClick={() =>
-                            setSelected(
-                              it.kind === "checkin"
-                                ? { kind: "checkin", data: it.data }
-                                : { kind: "hangout", data: it.data },
-                            )
-                          }
+                          onClick={() => {
+                            if (it.kind === "checkin") setSelected({ kind: "checkin", data: it.data });
+                            else if (it.kind === "hangout") setSelected({ kind: "hangout", data: it.data });
+                            else setSelected({ kind: "schedule", data: it.data });
+                          }}
                           className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-accent/40 transition-colors"
                         >
                           <span
@@ -344,22 +374,28 @@ export function CalendarView() {
       </div>
 
       {/* Detail modal */}
-      {selected && (
-        selected.kind === "checkin" ? (
-          <CalendarEventModal
-            kind="checkin"
-            data={selected.data}
-            onClose={() => setSelected(null)}
-            onUpdate={() => { setSelected(null); load(); }}
-          />
-        ) : (
-          <CalendarEventModal
-            kind="hangout"
-            data={selected.data}
-            onClose={() => setSelected(null)}
-            onUpdate={() => { setSelected(null); load(); }}
-          />
-        )
+      {selected?.kind === "checkin" && (
+        <CalendarEventModal
+          kind="checkin"
+          data={selected.data}
+          onClose={() => setSelected(null)}
+          onUpdate={() => { setSelected(null); load(); }}
+        />
+      )}
+      {selected?.kind === "hangout" && (
+        <CalendarEventModal
+          kind="hangout"
+          data={selected.data}
+          onClose={() => setSelected(null)}
+          onUpdate={() => { setSelected(null); load(); }}
+        />
+      )}
+      {selected?.kind === "schedule" && (
+        <RecurringHangoutDetailModal
+          schedule={selected.data}
+          onClose={() => setSelected(null)}
+          onUpdate={() => { setSelected(null); load(); }}
+        />
       )}
     </>
   );
