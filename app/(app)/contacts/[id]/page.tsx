@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ function PillButton({
       className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
       style={{
         borderRadius: "8px",
-        backgroundColor: active ? "#1F2024" : "transparent",
+        backgroundColor: active ? "var(--button-fill)" : "transparent",
         color: active ? "#FFFFFF" : "#1F2024",
         boxShadow: active ? "2px 2px 0 #1F2024" : "none",
       }}
@@ -257,24 +257,15 @@ export default function ContactDetailPage() {
           />
         </section>
 
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          style={{ borderRadius: "8px" }}
-        >
+        <ActionButton onClick={handleSave} disabled={saving}>
           {saving ? "Saving..." : "Save contact"}
-        </Button>
+        </ActionButton>
 
         <Separator />
 
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleDelete}
-          style={{ borderRadius: "8px" }}
-        >
+        <ActionButton variant="destructive" size="sm" onClick={handleDelete}>
           Delete contact
-        </Button>
+        </ActionButton>
       </div>
     </div>
   );

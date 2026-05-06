@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 onClick={() => { setMethod("email"); setPhase("input"); setError(""); }}
                 className={`flex-1 py-2 text-sm font-bold transition-colors ${
                   method === "email"
-                    ? "bg-[#1F2024] text-white"
+                    ? "bg-[var(--button-fill)] text-white"
                     : "bg-background text-foreground hover:bg-muted"
                 }`}
               >
@@ -125,12 +125,12 @@ export default function LoginPage() {
             >
               <div>
                 <div
-                  className="bg-[#1F2024] text-white text-xs font-bold px-3 py-1.5 rounded-[6px] whitespace-nowrap"
+                  className="bg-[var(--button-fill)] text-white text-xs font-bold px-3 py-1.5 rounded-[6px] whitespace-nowrap"
                   style={{ boxShadow: "2px 2px 0 #555" }}
                 >
                   Coming Soon!
                 </div>
-                <div className="w-2 h-2 bg-[#1F2024] rotate-45 mx-auto -mt-1" />
+                <div className="w-2 h-2 bg-[var(--button-fill)] rotate-45 mx-auto -mt-1" />
               </div>
             </div>
           </div>
@@ -154,14 +154,13 @@ export default function LoginPage() {
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button
+              <ActionButton
                 onClick={sendEmail}
                 disabled={loading || !email}
                 className="w-full"
-                style={{ borderRadius: "8px" }}
               >
                 {loading ? "Sending..." : "Send magic link"}
-              </Button>
+              </ActionButton>
             </div>
           )}
 
@@ -196,14 +195,13 @@ export default function LoginPage() {
                   autoFocus
                 />
                 {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button
+                <ActionButton
                   onClick={verifyEmailOtp}
                   disabled={loading || emailOtp.length < 8}
                   className="w-full"
-                  style={{ borderRadius: "8px" }}
                 >
                   {loading ? "Verifying..." : "Sign in"}
-                </Button>
+                </ActionButton>
               </div>
 
               <button
@@ -235,14 +233,13 @@ export default function LoginPage() {
                 <p className="text-xs text-muted-foreground mt-1">Include country code, e.g. +1 for US/Canada</p>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button
+              <ActionButton
                 onClick={sendPhone}
                 disabled={loading || !phone}
                 className="w-full"
-                style={{ borderRadius: "8px" }}
               >
                 {loading ? "Sending..." : "Send code"}
-              </Button>
+              </ActionButton>
             </div>
           )}
 
@@ -271,14 +268,13 @@ export default function LoginPage() {
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button
+              <ActionButton
                 onClick={verifyOtp}
                 disabled={loading || otp.length < 6}
                 className="w-full"
-                style={{ borderRadius: "8px" }}
               >
                 {loading ? "Verifying..." : "Sign in"}
-              </Button>
+              </ActionButton>
               <button
                 className="w-full text-xs text-muted-foreground underline"
                 onClick={() => { setPhase("input"); setOtp(""); setError(""); }}

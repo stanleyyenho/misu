@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationSearch, type LocationResult } from "@/components/LocationSearch";
@@ -26,7 +26,7 @@ function PillButton({ active, onClick, children }: { active: boolean; onClick: (
       className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
       style={{
         borderRadius: "8px",
-        backgroundColor: active ? "#1F2024" : "transparent",
+        backgroundColor: active ? "var(--button-fill)" : "transparent",
         color: active ? "#FFFFFF" : "#1F2024",
         boxShadow: active ? "2px 2px 0 #1F2024" : "none",
       }}
@@ -229,13 +229,13 @@ export function HangoutInstancesEditor({ contactId, hangoutType }: Props) {
 
       <div className="flex gap-2">
         {instances.length < MAX_INSTANCES && (
-          <Button variant="outline" size="sm" onClick={addInstance} style={{ borderRadius: "8px" }}>
+          <ActionButton variant="outline" size="sm" onClick={addInstance}>
             + Add instance
-          </Button>
+          </ActionButton>
         )}
-        <Button size="sm" onClick={handleSave} disabled={saving} style={{ borderRadius: "8px" }}>
+        <ActionButton size="sm" onClick={handleSave} disabled={saving}>
           {saving ? "Saving..." : "Save planned hangouts"}
-        </Button>
+        </ActionButton>
       </div>
     </div>
   );

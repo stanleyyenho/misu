@@ -87,6 +87,9 @@
 
   --radius: 0.625rem; /* 10px default card radius */
 
+  /* Filled-button background (slightly lighter than ink for less harsh look) */
+  --button-fill: #404040;
+
   /* Hard shadow color (flips in dark mode) */
   --shadow-hard: #1F2024;
 
@@ -127,6 +130,7 @@
 }
 
 .dark {
+  --button-fill: #C0C0C0;
   --background: #111111;
   --foreground: #F5F5F5;
   --card: #1C1C1C;

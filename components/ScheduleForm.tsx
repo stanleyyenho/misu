@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { HangoutInstancesEditor } from "@/components/HangoutInstancesEditor";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,7 +70,7 @@ function PillButton({
       className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
       style={{
         borderRadius: "8px",
-        backgroundColor: active ? "#1F2024" : "transparent",
+        backgroundColor: active ? "var(--button-fill)" : "transparent",
         color: active ? "#FFFFFF" : "#1F2024",
         boxShadow: active ? "2px 2px 0 #1F2024" : "none",
       }}
@@ -455,7 +455,7 @@ export function ScheduleForm({
               type="button"
               onClick={() => setIncludeNote((v) => !v)}
               className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-[#1F2024] transition-colors"
-              style={{ backgroundColor: includeNote ? "#1F2024" : "transparent" }}
+              style={{ backgroundColor: includeNote ? "var(--button-fill)" : "transparent" }}
               aria-checked={includeNote}
               role="switch"
             >
@@ -485,22 +485,13 @@ export function ScheduleForm({
 
       {/* Actions */}
       <div className="flex gap-2 pt-1">
-        <Button
-          onClick={handleSave}
-          disabled={saving || !frequencyDays}
-          style={{ borderRadius: "8px" }}
-        >
+        <ActionButton onClick={handleSave} disabled={saving || !frequencyDays}>
           {saving ? "Saving..." : initialFrequencyDays ? "Update cadence" : "Set cadence"}
-        </Button>
+        </ActionButton>
         {initialFrequencyDays && (
-          <Button
-            variant="outline"
-            onClick={handleRemove}
-            disabled={saving}
-            style={{ borderRadius: "8px" }}
-          >
+          <ActionButton variant="outline" onClick={handleRemove} disabled={saving}>
             Remove
-          </Button>
+          </ActionButton>
         )}
       </div>
     </div>

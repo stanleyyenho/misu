@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -136,24 +136,15 @@ export function CheckInModal({ checkIn, onClose, onUpdate }: Props) {
               </p>
             )}
             <DialogFooter className="flex-col gap-2 sm:flex-row">
-              <Button onClick={() => setView("complete")} className="flex-1">
+              <ActionButton onClick={() => setView("complete")} className="flex-1">
                 Mark Complete
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setView("reschedule")}
-                className="flex-1"
-              >
+              </ActionButton>
+              <ActionButton variant="outline" onClick={() => setView("reschedule")} className="flex-1">
                 Reschedule
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={handleSkip}
-                disabled={loading}
-                className="flex-1"
-              >
+              </ActionButton>
+              <ActionButton variant="ghost" onClick={handleSkip} disabled={loading} className="flex-1">
                 Skip
-              </Button>
+              </ActionButton>
             </DialogFooter>
           </div>
         )}
@@ -192,12 +183,12 @@ export function CheckInModal({ checkIn, onClose, onUpdate }: Props) {
               />
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setView("main")}>
+              <ActionButton variant="ghost" onClick={() => setView("main")}>
                 Back
-              </Button>
-              <Button onClick={handleComplete} disabled={loading}>
+              </ActionButton>
+              <ActionButton onClick={handleComplete} disabled={loading}>
                 Confirm
-              </Button>
+              </ActionButton>
             </DialogFooter>
           </div>
         )}
@@ -223,15 +214,12 @@ export function CheckInModal({ checkIn, onClose, onUpdate }: Props) {
               </PopoverContent>
             </Popover>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setView("main")}>
+              <ActionButton variant="ghost" onClick={() => setView("main")}>
                 Back
-              </Button>
-              <Button
-                onClick={handleReschedule}
-                disabled={!rescheduleDate || loading}
-              >
+              </ActionButton>
+              <ActionButton onClick={handleReschedule} disabled={!rescheduleDate || loading}>
                 Reschedule
-              </Button>
+              </ActionButton>
             </DialogFooter>
           </div>
         )}

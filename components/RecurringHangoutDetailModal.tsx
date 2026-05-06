@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScheduleForm } from "@/components/ScheduleForm";
@@ -138,12 +138,12 @@ export function RecurringHangoutDetailModal({ schedule, onClose, onUpdate }: Pro
             </div>
 
             <div className="flex flex-col gap-2">
-              <Button onClick={() => setView("edit")} style={{ borderRadius: "8px" }}>
+              <ActionButton onClick={() => setView("edit")}>
                 Edit cadence
-              </Button>
-              <Button variant="outline" onClick={() => setView("raincheck")} style={{ borderRadius: "8px" }}>
+              </ActionButton>
+              <ActionButton variant="outline" onClick={() => setView("raincheck")}>
                 Raincheck — push it back
-              </Button>
+              </ActionButton>
             </div>
           </div>
         )}
@@ -164,12 +164,12 @@ export function RecurringHangoutDetailModal({ schedule, onClose, onUpdate }: Pro
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => setView("detail")} style={{ borderRadius: "8px" }}>
+              <ActionButton variant="ghost" onClick={() => setView("detail")}>
                 ← Back
-              </Button>
-              <Button onClick={handleRaincheck} disabled={!raindcheckDate || saving} style={{ borderRadius: "8px" }}>
+              </ActionButton>
+              <ActionButton onClick={handleRaincheck} disabled={!raindcheckDate || saving}>
                 {saving ? "Saving…" : "Reschedule"}
-              </Button>
+              </ActionButton>
             </div>
           </div>
         )}

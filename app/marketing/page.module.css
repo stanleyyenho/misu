@@ -76,7 +76,7 @@
   padding: 8px 16px;
   border: 2px solid #1F2024;
   border-radius: 8px;
-  background: #1F2024;
+  background: var(--button-fill);
   color: #fff;
   box-shadow: 2px 2px 0 #1F2024;
   text-decoration: none;
@@ -155,7 +155,7 @@
   padding: 12px 22px;
   border: 2px solid #1F2024;
   border-radius: 8px;
-  background: #1F2024;
+  background: var(--button-fill);
   color: #fff;
   box-shadow: 4px 4px 0 #1F2024;
   text-decoration: none;
@@ -447,7 +447,7 @@
 }
 
 .freqChipActive {
-  background: #1F2024;
+  background: var(--button-fill);
   color: #fff;
 }
 
