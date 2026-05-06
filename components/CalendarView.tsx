@@ -150,6 +150,14 @@ export function CalendarView() {
       {/* Desktop: full calendar */}
       <div className="hidden md:block">
         {events.length === 0 ? emptyState : (
+        <div
+          className="misu-cal-card bg-white overflow-hidden"
+          style={{
+            border: "2px solid #1F2024",
+            borderRadius: "10px",
+            boxShadow: "4px 4px 0 #1F2024",
+          }}
+        >
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -162,6 +170,7 @@ export function CalendarView() {
             }}
             height="auto"
           />
+        </div>
         )}
       </div>
 
