@@ -1,6 +1,6 @@
 import { subDays, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns";
 import { prisma } from "./prisma";
-import { sendPushToAll } from "./webpush";
+import { sendPushToUser } from "./webpush";
 import { sendHangoutSms, sendHangoutCalendarInvite } from "./hangout-invite";
 
 interface DefaultHangoutConfig {
@@ -10,7 +10,7 @@ interface DefaultHangoutConfig {
   locationLng?: number;
   platform?: string;
   meetingLink?: string;
-  time?: string; // HH:mm
+  time?: string;
 }
 
 function applyTime(date: Date, time: string): Date {
@@ -18,17 +18,28 @@ function applyTime(date: Date, time: string): Date {
   return setMilliseconds(setSeconds(setMinutes(setHours(date, h), m), 0), 0);
 }
 
+interface HangoutParams {
+  id: string;
+  type: string;
+  date: Date;
+  locationName: string | null;
+  locationAddr: string | null;
+  platform: string | null;
+  meetingLink: string | null;
+  noteToFriend: string | null;
+  contact: {
+    firstName: string;
+    lastName: string | null;
+    phone: string | null;
+    email: string | null;
+  };
+}
+
 async function autoSendHangout(
-  hangoutId: string,
+  hangout: HangoutParams,
   senderName: string,
   senderEmail: string
 ): Promise<void> {
-  const hangout = await prisma.hangout.findUnique({
-    where: { id: hangoutId },
-    include: { contact: { select: { firstName: true, lastName: true, phone: true, email: true } } },
-  });
-  if (!hangout) return;
-
   const params = {
     senderName,
     contact: hangout.contact,
@@ -47,9 +58,9 @@ async function autoSendHangout(
   if (hangout.contact.phone) await sendHangoutSms(params);
   if (hangout.contact.email && senderEmail) {
     await sendHangoutCalendarInvite({ ...params, senderEmail });
-    await prisma.hangout.update({ where: { id: hangoutId }, data: { calInviteSent: true } });
+    await prisma.hangout.update({ where: { id: hangout.id }, data: { calInviteSent: true } });
   }
-  await prisma.hangout.update({ where: { id: hangoutId }, data: { status: "invited" } });
+  await prisma.hangout.update({ where: { id: hangout.id }, data: { status: "invited" } });
 }
 
 export async function processCadenceModes(): Promise<{ prompted: number; autoSent: number; exhausted: number }> {
@@ -73,15 +84,20 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
     },
   });
 
+  if (schedules.length === 0) return { prompted, autoSent, exhausted };
+
+  // Batch-fetch all relevant user profiles in one query instead of N individual ones
+  const userIds = [...new Set(schedules.map((s) => s.contact.userId))];
+  const profiles = await prisma.userProfile.findMany({ where: { userId: { in: userIds } } });
+  const profileByUserId = new Map(profiles.map((p) => [p.userId, p]));
+
   for (const schedule of schedules) {
     const { contact, cadenceMode, leadTimeDays, nextCheckIn } = schedule;
     const triggerDate = subDays(nextCheckIn, leadTimeDays);
-    if (triggerDate > now) continue; // not time yet
-
-    // Skip if there's already an active hangout for this contact
+    if (triggerDate > now) continue;
     if (contact.hangouts.length > 0) continue;
 
-    const profile = await prisma.userProfile.findUnique({ where: { userId: contact.userId } });
+    const profile = profileByUserId.get(contact.userId);
     const senderName = profile
       ? [profile.firstName, profile.lastName].filter(Boolean).join(" ")
       : "Someone";
@@ -89,7 +105,7 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
     const contactName = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
 
     if (cadenceMode === "prompt") {
-      await sendPushToAll({
+      await sendPushToUser(contact.userId, {
         title: `Time to plan a hangout with ${contactName}`,
         body: `You're due to meet up in ${leadTimeDays} days — pick a spot and time.`,
         url: `/contacts/${contact.id}`,
@@ -98,7 +114,11 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
     } else if (cadenceMode === "perpetual") {
       if (!schedule.defaultHangout) continue;
       let config: DefaultHangoutConfig;
-      try { config = JSON.parse(schedule.defaultHangout); } catch { continue; }
+      try {
+        config = JSON.parse(schedule.defaultHangout);
+      } catch {
+        continue;
+      }
 
       const hangoutDate = config.time ? applyTime(nextCheckIn, config.time) : nextCheckIn;
 
@@ -120,10 +140,29 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
       });
 
       try {
-        await autoSendHangout(hangout.id, senderName, senderEmail);
+        await autoSendHangout(
+          {
+            id: hangout.id,
+            type: hangout.type,
+            date: hangout.date,
+            locationName: hangout.locationName,
+            locationAddr: hangout.locationAddr,
+            platform: hangout.platform,
+            meetingLink: hangout.meetingLink,
+            noteToFriend: hangout.noteToFriend,
+            contact: {
+              firstName: contact.firstName,
+              lastName: contact.lastName,
+              phone: contact.phone,
+              email: contact.email,
+            },
+          },
+          senderName,
+          senderEmail
+        );
         autoSent++;
       } catch {
-        // Leave as draft if sending fails — user can retry manually
+        // Leave as draft if sending fails
       }
     } else if (cadenceMode === "planned") {
       const nextInstance = await prisma.hangoutInstance.findFirst({
@@ -132,7 +171,7 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
       });
 
       if (!nextInstance) {
-        await sendPushToAll({
+        await sendPushToUser(contact.userId, {
           title: `Plan more hangouts with ${contactName}`,
           body: `Your pre-planned hangout list is empty — add more in Misu.`,
           url: `/contacts/${contact.id}`,
@@ -164,7 +203,26 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
       });
 
       try {
-        await autoSendHangout(hangout.id, senderName, senderEmail);
+        await autoSendHangout(
+          {
+            id: hangout.id,
+            type: hangout.type,
+            date: hangout.date,
+            locationName: hangout.locationName,
+            locationAddr: hangout.locationAddr,
+            platform: hangout.platform,
+            meetingLink: hangout.meetingLink,
+            noteToFriend: hangout.noteToFriend,
+            contact: {
+              firstName: contact.firstName,
+              lastName: contact.lastName,
+              phone: contact.phone,
+              email: contact.email,
+            },
+          },
+          senderName,
+          senderEmail
+        );
         autoSent++;
       } catch {
         // Leave as draft if sending fails
