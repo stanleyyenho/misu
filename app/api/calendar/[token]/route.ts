@@ -13,7 +13,7 @@ export async function GET(
   }
 
   const checkIns = await prisma.checkIn.findMany({
-    where: { status: "pending" },
+    where: { status: "pending", contact: { userId: share.userId } },
     include: { contact: true },
     orderBy: { scheduledAt: "asc" },
   });

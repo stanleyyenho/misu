@@ -1,10 +1,30 @@
 import { NextResponse } from "next/server";
+import twilio from "twilio";
 import { prisma } from "@/lib/prisma";
 
 // Twilio sends form-encoded POST bodies
 export async function POST(request: Request) {
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!authToken) {
+    return new NextResponse("Forbidden", { status: 403 });
+  }
+
+  const signature = request.headers.get("x-twilio-signature");
   const body = await request.text();
   const params = new URLSearchParams(body);
+
+  // Twilio signs the full request URL plus the sorted POST params.
+  // Behind a proxy, request.url may show the internal host; trust the
+  // Forwarded/X-Forwarded-* headers that Vercel and most platforms set.
+  const proto = request.headers.get("x-forwarded-proto") ?? new URL(request.url).protocol.replace(":", "");
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  const path = new URL(request.url).pathname + new URL(request.url).search;
+  const fullUrl = `${proto}://${host}${path}`;
+
+  const paramObject = Object.fromEntries(params);
+  if (!signature || !twilio.validateRequest(authToken, signature, fullUrl, paramObject)) {
+    return new NextResponse("Forbidden", { status: 403 });
+  }
 
   const from = params.get("From");    // contact's phone number
   const rawBody = (params.get("Body") ?? "").trim();
