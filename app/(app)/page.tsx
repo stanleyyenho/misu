@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { format, isToday, isTomorrow, differenceInDays } from "date-fns";
 import { toast } from "sonner";
@@ -571,11 +572,18 @@ export default function DashboardPage() {
       ══════════════════════════════════════════════════════════════════ */}
       {recent.length > 0 && (
         <section>
-          <div className="mb-3">
+          <div className="flex items-center justify-between mb-3">
             <SectionLabel>recent activity</SectionLabel>
+            <Link
+              href="/activity"
+              className="text-xs font-bold px-2.5 py-1 border-2 border-[#1F2024] bg-card transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+              style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024" }}
+            >
+              View all
+            </Link>
           </div>
           <ul className="space-y-2">
-            {recent.map((item) => {
+            {recent.slice(0, 5).map((item) => {
               const name = [item.contact.firstName, item.contact.lastName].filter(Boolean).join(" ");
               const date = item.completedAt ?? item.scheduledAt;
               const typeLabel = activityTypeLabel(item);
