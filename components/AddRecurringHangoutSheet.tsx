@@ -12,23 +12,26 @@ import { Input } from "@/components/ui/input";
 import { getAvatarColor } from "@/lib/avatar-color";
 import { ScheduleForm } from "@/components/ScheduleForm";
 
+interface ScheduleRow {
+  scheduleType: string;
+  frequencyDays: number;
+  hangoutType: string;
+  cadenceMode: string;
+  leadTimeDays: number;
+  tone: string;
+  approveBeforeSend: boolean;
+  defaultHangout: string | null;
+  noteToFriend: string | null;
+  isActive: boolean;
+}
+
 interface ContactOption {
   id: string;
   firstName: string;
   lastName: string | null;
   phone: string | null;
   messagingPlatform: string | null;
-  schedule: {
-    frequencyDays: number;
-    hangoutType: string;
-    cadenceMode: string;
-    leadTimeDays: number;
-    tone: string;
-    approveBeforeSend: boolean;
-    defaultHangout: string | null;
-    noteToFriend: string | null;
-    isActive: boolean;
-  } | null;
+  schedules: ScheduleRow[];
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -63,10 +66,10 @@ export function AddRecurringHangoutSheet({ open, onOpenChange, onSaved }: Props)
     );
   });
 
-  const existingSchedule =
-    selected?.schedule?.isActive && selected.schedule.cadenceMode !== "prompt"
-      ? selected.schedule
-      : null;
+  const hangoutSchedule = selected?.schedules.find(
+    (s) => s.scheduleType === "hangout" && s.isActive,
+  );
+  const existingSchedule = hangoutSchedule ?? null;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -106,7 +109,7 @@ export function AddRecurringHangoutSheet({ open, onOpenChange, onSaved }: Props)
                         </span>
                       </div>
                       <span className="font-semibold text-sm">{name}</span>
-                      {c.schedule?.isActive && c.schedule.cadenceMode !== "prompt" && (
+                      {c.schedules.some((s) => s.scheduleType === "hangout" && s.isActive) && (
                         <span className="ml-auto text-[10px] text-muted-foreground font-semibold">active</span>
                       )}
                     </button>
