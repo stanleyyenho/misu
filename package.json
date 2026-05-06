@@ -8,6 +8,7 @@
     "start": "NODE_ENV=production bun --bun run server.ts",
     "lint": "eslint",
     "db:migrate": "bun --bun run prisma migrate dev",
+    "db:migrate:deploy": "DATABASE_URL=${DIRECT_URL:-$DATABASE_URL} bun --bun run prisma migrate deploy",
     "db:generate": "bun --bun run prisma generate",
     "postinstall": "bun --bun run prisma generate"
   },
