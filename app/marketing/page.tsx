@@ -31,9 +31,10 @@ export default function MarketingPage() {
           <div className={styles.heroEyebrow}>your relationship co-pilot</div>
 
           <h1 className={styles.heroHeading}>
-            be with
+            be with the
             <br />
-            the people who <span className={styles.accentWord}>matter</span>
+            people who 
+            <br /> <span className={styles.accentWord}>matter</span>
           </h1>
 
           <p className={styles.heroSub}>
