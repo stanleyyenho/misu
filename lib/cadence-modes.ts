@@ -70,7 +70,7 @@ export async function processCadenceModes(): Promise<{ prompted: number; autoSen
   let exhausted = 0;
 
   const schedules = await prisma.checkInSchedule.findMany({
-    where: { isActive: true },
+    where: { isActive: true, scheduleType: "hangout" },
     include: {
       contact: {
         include: {

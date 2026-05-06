@@ -28,9 +28,9 @@ export async function POST(
     data: { scheduledAt: new Date(scheduledAt) },
   });
 
-  // Keep the schedule's nextCheckIn in sync
-  await prisma.checkInSchedule.update({
-    where: { contactId: checkIn.contactId },
+  // Keep the check-in schedule's nextCheckIn in sync
+  await prisma.checkInSchedule.updateMany({
+    where: { contactId: checkIn.contactId, scheduleType: "check-in" },
     data: { nextCheckIn: new Date(scheduledAt) },
   }).catch(() => {});
 

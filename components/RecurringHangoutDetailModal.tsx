@@ -79,7 +79,7 @@ export function RecurringHangoutDetailModal({ schedule, onClose, onUpdate }: Pro
       const res = await fetch(`/api/contacts/${s.contactId}/schedule`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nextCheckIn: new Date(raindcheckDate).toISOString() }),
+        body: JSON.stringify({ scheduleType: "hangout", nextCheckIn: new Date(raindcheckDate).toISOString() }),
       });
       if (!res.ok) throw new Error();
       toast.success(`Next hangout rescheduled to ${format(new Date(raindcheckDate), "MMM d, yyyy")}`);

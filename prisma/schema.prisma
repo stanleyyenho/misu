@@ -20,7 +20,7 @@ model Contact {
   notes             String?
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
-  schedule          CheckInSchedule?
+  schedules         CheckInSchedule[]
   checkIns          CheckIn[]
   messageLogs       MessageLog[]
   groups            ContactGroupMember[]
@@ -50,7 +50,8 @@ model ContactGroupMember {
 
 model CheckInSchedule {
   id               String    @id @default(cuid())
-  contactId        String    @unique
+  contactId        String
+  scheduleType     String    @default("check-in")  // check-in | hangout
   contact          Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
   frequencyDays    Int
   frequencyJitterDays Int @default(0)
@@ -71,6 +72,8 @@ model CheckInSchedule {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   hangoutInstances HangoutInstance[]
+
+  @@unique([contactId, scheduleType])
 }
 
 model CheckIn {

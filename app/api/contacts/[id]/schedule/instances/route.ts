@@ -13,7 +13,7 @@ export async function GET(
   const owned = await prisma.contact.findFirst({ where: { id: contactId, userId: user.id } });
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const schedule = await prisma.checkInSchedule.findUnique({ where: { contactId } });
+  const schedule = await prisma.checkInSchedule.findFirst({ where: { contactId, scheduleType: "hangout" } });
   if (!schedule) return NextResponse.json([], { status: 200 });
 
   const instances = await prisma.hangoutInstance.findMany({
@@ -36,7 +36,7 @@ export async function PUT(
   const owned = await prisma.contact.findFirst({ where: { id: contactId, userId: user.id } });
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const schedule = await prisma.checkInSchedule.findUnique({ where: { contactId } });
+  const schedule = await prisma.checkInSchedule.findFirst({ where: { contactId, scheduleType: "hangout" } });
   if (!schedule) return NextResponse.json({ error: "No schedule set" }, { status: 422 });
 
   const body = await request.json();

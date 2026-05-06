@@ -12,8 +12,12 @@ export function computeJitteredNextDate(config: JitterConfig, from: Date = new D
   return addDays(from, config.frequencyDays + offset);
 }
 
+// Advances the check-in message schedule only (scheduleType="check-in").
+// Hangout schedules advance via their own complete/skip handlers.
 export async function createNextCheckIn(contactId: string, fromDate?: Date): Promise<void> {
-  const schedule = await prisma.checkInSchedule.findUnique({ where: { contactId } });
+  const schedule = await prisma.checkInSchedule.findFirst({
+    where: { contactId, scheduleType: "check-in" },
+  });
   if (!schedule || !schedule.isActive) return;
 
   const nextDate = computeJitteredNextDate(schedule, fromDate ?? new Date());
@@ -21,7 +25,7 @@ export async function createNextCheckIn(contactId: string, fromDate?: Date): Pro
   await prisma.$transaction([
     prisma.checkIn.create({ data: { contactId, scheduledAt: nextDate, status: "pending" } }),
     prisma.checkInSchedule.update({
-      where: { contactId },
+      where: { id: schedule.id },
       data: { lastCheckIn: new Date(), nextCheckIn: nextDate },
     }),
   ]);
