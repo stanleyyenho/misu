@@ -645,6 +645,16 @@
   color: #666666;
 }
 
+.footerLink {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footerLink:hover {
+  color: #1F2024;
+}
+
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .featureGrid { grid-template-columns: 1fr; }
