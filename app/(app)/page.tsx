@@ -406,7 +406,7 @@ export default function DashboardPage() {
         {/* 1a — Recurring */}
         <div className="mb-5">
           <div className="mb-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-foreground">Recurring</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recurring</p>
           </div>
 
           {isLoading ? (
@@ -416,14 +416,8 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : recurringSchedules.length === 0 ? (
-            <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center flex flex-col items-center gap-1.5">
+            <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center">
               <p className="text-sm text-muted-foreground">No recurring hangouts set up yet.</p>
-              <button
-                onClick={() => setAddRecurringOpen(true)}
-                className="text-sm font-bold underline underline-offset-2"
-              >
-                Set one up
-              </button>
             </div>
           ) : (
             <ul className="space-y-3">
@@ -476,20 +470,14 @@ export default function DashboardPage() {
         {/* 1b — One-time */}
         <div>
           <div className="mb-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-foreground">One-time</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">One-time</p>
           </div>
 
           {isLoading ? (
             <div className="h-[72px] rounded-[10px] border-2 border-[#1F2024] bg-secondary animate-pulse" style={{ boxShadow: "4px 4px 0 #1F2024" }} />
           ) : oneTimeHangouts.length === 0 ? (
-            <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center flex flex-col items-center gap-1.5">
+            <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center">
               <p className="text-sm text-muted-foreground">No one-time hangouts coming up.</p>
-              <button
-                onClick={() => setAddOneTimeOpen(true)}
-                className="text-sm font-bold underline underline-offset-2"
-              >
-                Set one up
-              </button>
             </div>
           ) : (
             <ul className="space-y-3">
@@ -554,14 +542,8 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : messageCheckIns.length === 0 ? (
-          <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center flex flex-col items-center gap-1.5">
+          <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center">
             <p className="text-sm text-muted-foreground">No check-in messages scheduled.</p>
-            <button
-              onClick={() => setAddCheckInOpen(true)}
-              className="text-sm font-bold underline underline-offset-2"
-            >
-              Set one up
-            </button>
           </div>
         ) : (
           <ul className="space-y-3">
