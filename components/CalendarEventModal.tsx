@@ -10,12 +10,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ActionButton } from "@/components/ui/action-button";
 import { LocationSearch, type LocationResult } from "@/components/LocationSearch";
 import { getAvatarColor } from "@/lib/avatar-color";
+
+// ─── icons ───────────────────────────────────────────────────────────────────
+
+function EventIcon({ kind, size = 16 }: { kind: "message" | "one-time" | "recurring"; size?: number }) {
+  if (kind === "message") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+      </svg>
+    );
+  }
+  if (kind === "one-time") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="3" />
+        <path d="M16 2v4M8 2v4M3 10h18" />
+        <circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16" />
+      <path d="M3 21v-5h5" />
+    </svg>
+  );
+}
 
 // ─── shared types (exported so dashboard + calendar can use them) ────────────
 
@@ -112,7 +140,7 @@ function PillButton({ active, onClick, children }: { active: boolean; onClick: (
       className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
       style={{
         borderRadius: "8px",
-        backgroundColor: active ? "#1F2024" : "transparent",
+        backgroundColor: active ? "var(--button-fill)" : "transparent",
         color: active ? "#FFFFFF" : "#1F2024",
         boxShadow: active ? "2px 2px 0 #1F2024" : "none",
       }}
@@ -148,9 +176,9 @@ function CheckInDetailView({
   return (
     <div className="space-y-4">
       {/* Type + cadence row */}
-      <div className="rounded-[10px] border-2 border-[#1F2024] p-4 space-y-2" style={{ boxShadow: "2px 2px 0 #1F2024" }}>
+      <div className="rounded-[10px] border-2 border-[#1F2024] bg-card p-4 space-y-2" style={{ boxShadow: "4px 4px 0 #1F2024" }}>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-base">{isHangoutMode ? "🎊" : "💬"}</span>
+          <EventIcon kind={isHangoutMode ? "recurring" : "message"} />
           <span className="text-sm font-bold">
             {isHangoutMode ? "Recurring hangout reminder" : "Recurring message check-in"}
           </span>
@@ -175,16 +203,16 @@ function CheckInDetailView({
       {/* Actions */}
       <div className="flex flex-col gap-2 sm:flex-row">
         {onSend && (
-          <Button onClick={onSend} className="flex-1" style={{ borderRadius: "8px" }}>
+          <ActionButton onClick={onSend} className="flex-1">
             {isHangoutMode ? "Send invite →" : "Send message →"}
-          </Button>
+          </ActionButton>
         )}
-        <Button variant="outline" onClick={onReschedule} className="flex-1" style={{ borderRadius: "8px" }}>
+        <ActionButton variant="outline" onClick={onReschedule} className="flex-1">
           Reschedule
-        </Button>
-        <Button variant="ghost" onClick={onSkip} className="flex-1" style={{ borderRadius: "8px" }}>
+        </ActionButton>
+        <ActionButton variant="ghost" onClick={onSkip} className="flex-1">
           Skip
-        </Button>
+        </ActionButton>
       </div>
     </div>
   );
@@ -212,9 +240,9 @@ function HangoutDetailView({
   return (
     <div className="space-y-4">
       {/* Detail card */}
-      <div className="rounded-[10px] border-2 border-[#1F2024] p-4 space-y-2" style={{ boxShadow: "2px 2px 0 #1F2024" }}>
+      <div className="rounded-[10px] border-2 border-[#1F2024] bg-card p-4 space-y-2" style={{ boxShadow: "4px 4px 0 #1F2024" }}>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-base">{data.checkInId ? "🎊" : "🎉"}</span>
+          <EventIcon kind={data.checkInId ? "recurring" : "one-time"} />
           <span className="text-sm font-bold">{hangoutTypeLabel(data)}</span>
           <span
             className="text-[11px] font-bold px-2 py-0.5 border border-[#1F2024]"
@@ -251,24 +279,24 @@ function HangoutDetailView({
       {/* Actions */}
       <div className="flex flex-col gap-2 sm:flex-row flex-wrap">
         {data.status === "draft" && (
-          <Button onClick={onSendInvite} disabled={sending} className="flex-1" style={{ borderRadius: "8px" }}>
+          <ActionButton onClick={onSendInvite} disabled={sending} className="flex-1">
             {sending ? "Sending…" : "Send invite"}
-          </Button>
+          </ActionButton>
         )}
         {!isPast && (
-          <Button variant="outline" onClick={onEdit} className="flex-1" style={{ borderRadius: "8px" }}>
+          <ActionButton variant="outline" onClick={onEdit} className="flex-1">
             Edit details
-          </Button>
+          </ActionButton>
         )}
         {isPast && data.status !== "completed" && data.status !== "skipped" && (
-          <Button onClick={onComplete} className="flex-1" style={{ borderRadius: "8px" }}>
+          <ActionButton onClick={onComplete} className="flex-1">
             Mark as done
-          </Button>
+          </ActionButton>
         )}
         {data.status !== "skipped" && data.status !== "completed" && (
-          <Button variant="ghost" onClick={onSkip} className="flex-1" style={{ borderRadius: "8px" }}>
+          <ActionButton variant="ghost" onClick={onSkip} className="flex-1">
             Skip
-          </Button>
+          </ActionButton>
         )}
       </div>
     </div>
@@ -378,16 +406,16 @@ function HangoutEditView({
       {/* Actions */}
       <div className="flex flex-col gap-2">
         {data.contact.phone && data.status !== "draft" && (
-          <Button onClick={() => handleSave(true)} disabled={saving} style={{ borderRadius: "8px" }}>
+          <ActionButton onClick={() => handleSave(true)} disabled={saving}>
             {saving ? "Saving…" : `Save & notify ${data.contact.firstName} via SMS`}
-          </Button>
+          </ActionButton>
         )}
-        <Button variant="outline" onClick={() => handleSave(false)} disabled={saving} style={{ borderRadius: "8px" }}>
+        <ActionButton variant="outline" onClick={() => handleSave(false)} disabled={saving}>
           Save without notifying
-        </Button>
-        <Button variant="ghost" onClick={onBack} disabled={saving} style={{ borderRadius: "8px" }}>
+        </ActionButton>
+        <ActionButton variant="ghost" onClick={onBack} disabled={saving}>
           ← Back
-        </Button>
+        </ActionButton>
       </div>
     </div>
   );
@@ -430,10 +458,10 @@ function RescheduleView({
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} min={format(new Date(), "yyyy-MM-dd")} style={{ borderRadius: "8px" }} />
       </div>
       <div className="flex gap-2">
-        <Button variant="ghost" onClick={onBack} style={{ borderRadius: "8px" }}>← Back</Button>
-        <Button onClick={handleReschedule} disabled={!date || saving} style={{ borderRadius: "8px" }}>
+        <ActionButton variant="ghost" onClick={onBack}>← Back</ActionButton>
+        <ActionButton onClick={handleReschedule} disabled={!date || saving}>
           {saving ? "Saving…" : "Reschedule"}
-        </Button>
+        </ActionButton>
       </div>
     </div>
   );

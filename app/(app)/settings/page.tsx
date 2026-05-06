@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -233,15 +233,14 @@ export default function SettingsPage() {
             />
           </div>
         </div>
-        <Button
+        <ActionButton
           size="sm"
           onClick={saveProfile}
           disabled={savingProfile}
           className="mt-3"
-          style={{ borderRadius: "8px" }}
         >
           {savingProfile ? "Saving..." : "Save profile"}
-        </Button>
+        </ActionButton>
       </section>
 
       <Separator className="mb-6" />
@@ -259,15 +258,14 @@ export default function SettingsPage() {
           rows={6}
           style={{ borderRadius: "8px" }}
         />
-        <Button
+        <ActionButton
           size="sm"
           onClick={saveSampleTexts}
           disabled={savingSamples}
           className="mt-2"
-          style={{ borderRadius: "8px" }}
         >
           {savingSamples ? "Saving..." : "Save samples"}
-        </Button>
+        </ActionButton>
         <p className="text-xs text-muted-foreground mt-1.5">
           Stored locally on your device — never sent to our servers
         </p>
@@ -364,14 +362,13 @@ export default function SettingsPage() {
             onKeyDown={(e) => e.key === "Enter" && createShare()}
             style={{ borderRadius: "8px" }}
           />
-          <Button
+          <ActionButton
             onClick={createShare}
             disabled={creating}
             className="shrink-0"
-            style={{ borderRadius: "8px" }}
           >
             Create
-          </Button>
+          </ActionButton>
         </div>
 
         {shares.length === 0 ? (
@@ -398,7 +395,7 @@ export default function SettingsPage() {
                   <code className="text-xs bg-muted px-2 py-1.5 rounded flex-1 truncate font-mono">
                     {typeof window !== "undefined" ? getIcalUrl(s.token) : ""}
                   </code>
-                  <Button
+                  <ActionButton
                     size="sm"
                     variant="outline"
                     onClick={() => {
@@ -406,10 +403,9 @@ export default function SettingsPage() {
                       toast.success("Copied!");
                     }}
                     className="shrink-0"
-                    style={{ borderRadius: "8px" }}
                   >
                     Copy
-                  </Button>
+                  </ActionButton>
                 </div>
               </li>
             ))}
@@ -422,16 +418,15 @@ export default function SettingsPage() {
       {/* Account */}
       <section className="mb-6">
         <SectionHeader label="account" />
-        <Button
+        <ActionButton
           variant="outline"
           onClick={async () => {
             await supabase.auth.signOut();
             window.location.href = "/login";
           }}
-          style={{ borderRadius: "8px" }}
         >
           Sign out
-        </Button>
+        </ActionButton>
       </section>
     </div>
   );

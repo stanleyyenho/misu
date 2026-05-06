@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Textarea } from "@/components/ui/textarea";
 import { buildDeepLink, PLATFORM_LABELS, PLATFORM_OPEN_LABELS } from "@/lib/deep-links";
 import type { MessagingPlatform } from "@/lib/deep-links";
@@ -208,7 +208,7 @@ export function MessagePreview({ checkIn, onClose }: Props) {
               <button
                 onClick={handleSend}
                 disabled={generating || !message}
-                className="flex-1 text-sm font-bold px-4 py-2 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px disabled:opacity-50"
+                className="flex-1 text-sm font-bold px-4 py-2 border-2 border-[#1F2024] bg-[var(--button-fill)] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px disabled:opacity-50"
                 style={{
                   borderRadius: "8px",
                   boxShadow: "2px 2px 0 #1F2024",
@@ -219,7 +219,7 @@ export function MessagePreview({ checkIn, onClose }: Props) {
                   : PLATFORM_OPEN_LABELS[platform] ?? "Open app"}
               </button>
             ) : (
-              <Button
+              <ActionButton
                 onClick={() => {
                   navigator.clipboard.writeText(message);
                   toast.success("Message copied to clipboard");
@@ -227,10 +227,9 @@ export function MessagePreview({ checkIn, onClose }: Props) {
                 }}
                 disabled={generating || !message || marking}
                 className="flex-1"
-                style={{ borderRadius: "8px" }}
               >
                 Copy message
-              </Button>
+              </ActionButton>
             )}
           </div>
 

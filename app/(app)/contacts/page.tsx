@@ -82,7 +82,7 @@ export default function ContactsPage() {
           </div>
           <Link
             href="/contacts/new"
-            className="text-sm font-bold px-4 py-2 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+            className="text-sm font-bold px-4 py-2 border-2 border-[#1F2024] bg-[var(--button-fill)] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
             style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024" }}
           >
             + Add
@@ -106,7 +106,7 @@ export default function ContactsPage() {
               className={`shrink-0 text-xs font-bold px-3 py-1 border-2 border-[#1F2024] transition-all`}
               style={{
                 borderRadius: "8px",
-                backgroundColor: !activeGroup ? "#1F2024" : "transparent",
+                backgroundColor: !activeGroup ? "var(--button-fill)" : "transparent",
                 color: !activeGroup ? "#FFFFFF" : "#1F2024",
                 boxShadow: !activeGroup ? "1px 1px 0 #1F2024" : "none",
               }}

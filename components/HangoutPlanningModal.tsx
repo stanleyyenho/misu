@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,7 +40,7 @@ function PillButton({
       className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
       style={{
         borderRadius: "8px",
-        backgroundColor: active ? "#1F2024" : "transparent",
+        backgroundColor: active ? "var(--button-fill)" : "transparent",
         color: active ? "#FFFFFF" : "#1F2024",
         boxShadow: active ? "2px 2px 0 #1F2024" : "none",
       }}
@@ -272,13 +272,9 @@ export function HangoutPlanningModal({
         </div>
 
         <DialogFooter>
-          <Button
-            onClick={handleSubmit}
-            disabled={saving}
-            style={{ borderRadius: "8px" }}
-          >
+          <ActionButton onClick={handleSubmit} disabled={saving}>
             {saving ? "Saving..." : "Save hangout"}
-          </Button>
+          </ActionButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -32,15 +32,60 @@ function getContactColor(contactId: string): string {
   return CHECKIN_COLORS[Math.abs(hash) % CHECKIN_COLORS.length];
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── icons ────────────────────────────────────────────────────────────────────
 
-function checkInIcon(ci: CheckInDetail): string {
+type EventKind = "message" | "one-time" | "recurring";
+
+function checkInKind(ci: CheckInDetail): EventKind {
   const cadenceMode = ci.contact.schedule?.cadenceMode;
-  return cadenceMode && cadenceMode !== "prompt" ? "🎊" : "💬";
+  return cadenceMode && cadenceMode !== "prompt" ? "recurring" : "message";
 }
 
-function hangoutIcon(h: HangoutDetail): string {
-  return h.checkInId ? "🎊" : "🎉";
+function hangoutKind(h: HangoutDetail): EventKind {
+  return h.checkInId ? "recurring" : "one-time";
+}
+
+function EventIcon({ kind, size = 14 }: { kind: EventKind; size?: number }) {
+  const stroke = "currentColor";
+  const sw = 2;
+  if (kind === "message") {
+    // Chat bubble
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+      </svg>
+    );
+  }
+  if (kind === "one-time") {
+    // Calendar with single dot
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="3" />
+        <path d="M16 2v4M8 2v4M3 10h18" />
+        <circle cx="12" cy="16" r="1.5" fill={stroke} stroke="none" />
+      </svg>
+    );
+  }
+  // recurring — circular arrows
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16" />
+      <path d="M3 21v-5h5" />
+    </svg>
+  );
+}
+
+// renderToString helper for FullCalendar event title strings
+function eventIconSvg(kind: EventKind): string {
+  if (kind === "message") {
+    return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;flex-shrink:0"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>`;
+  }
+  if (kind === "one-time") {
+    return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>`;
+  }
+  return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;flex-shrink:0"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg>`;
 }
 
 // ─── CalendarView ─────────────────────────────────────────────────────────────
@@ -70,12 +115,11 @@ export function CalendarView() {
   const checkInEvents = checkIns.map((ci) => {
     const name = [ci.contact.firstName, ci.contact.lastName].filter(Boolean).join(" ");
     const overdue = isPast(new Date(ci.scheduledAt));
-    const icon = checkInIcon(ci);
     return {
       id: `ci-${ci.id}`,
-      title: `${icon} ${name}`,
+      title: name,
       date: ci.scheduledAt.split("T")[0],
-      extendedProps: { kind: "checkin" as const, data: ci },
+      extendedProps: { kind: "checkin" as const, data: ci, eventKind: checkInKind(ci) },
       backgroundColor: overdue ? "oklch(0.57 0.22 27)" : getContactColor(ci.contact.id),
       borderColor: "transparent",
       textColor: "oklch(0.985 0.006 80)",
@@ -84,12 +128,11 @@ export function CalendarView() {
 
   const hangoutEvents = hangouts.map((h) => {
     const name = [h.contact.firstName, h.contact.lastName].filter(Boolean).join(" ");
-    const icon = hangoutIcon(h);
     return {
       id: `h-${h.id}`,
-      title: `${icon} ${name}`,
+      title: name,
       date: new Date(h.date).toISOString().split("T")[0],
-      extendedProps: { kind: "hangout" as const, data: h },
+      extendedProps: { kind: "hangout" as const, data: h, eventKind: hangoutKind(h) },
       backgroundColor: "oklch(0.60 0.12 290)",
       borderColor: "transparent",
       textColor: "oklch(0.985 0.006 80)",
@@ -141,9 +184,9 @@ export function CalendarView() {
       {/* legend */}
       {events.length > 0 && (
         <div className="flex flex-wrap gap-3 mb-4 text-xs font-semibold text-muted-foreground">
-          <span className="flex items-center gap-1"><span>💬</span> Message check-in</span>
-          <span className="flex items-center gap-1"><span>🎉</span> One-time hangout</span>
-          <span className="flex items-center gap-1"><span>🎊</span> Recurring hangout</span>
+          <span className="flex items-center gap-1.5"><EventIcon kind="message" /> Message check-in</span>
+          <span className="flex items-center gap-1.5"><EventIcon kind="one-time" /> One-time hangout</span>
+          <span className="flex items-center gap-1.5"><EventIcon kind="recurring" /> Recurring hangout</span>
         </div>
       )}
 
@@ -162,7 +205,13 @@ export function CalendarView() {
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             headerToolbar={{ left: "prev,next today", center: "title", right: "dayGridMonth,dayGridWeek" }}
+            buttonText={{ today: "Today", month: "Month", week: "Week" }}
             events={events}
+            eventContent={(arg) => {
+              const ep = arg.event.extendedProps as { eventKind: EventKind };
+              const html = `<span style="display:inline-flex;align-items:center;gap:0;min-width:0">${eventIconSvg(ep.eventKind)}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${arg.event.title}</span></span>`;
+              return { html };
+            }}
             eventClick={(info) => {
               const ep = info.event.extendedProps as { kind: "checkin" | "hangout"; data: CheckInDetail | HangoutDetail };
               if (ep.kind === "checkin") setSelected({ kind: "checkin", data: ep.data as CheckInDetail });

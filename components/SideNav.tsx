@@ -111,7 +111,7 @@ export function SideNav() {
           <Link
             key={l.href}
             href={l.href}
-            className={`px-4 py-2 text-sm font-bold transition-all border-2 ${
+            className={`px-4 py-1.5 text-sm font-bold transition-all border-2 ${
               active
                 ? "bg-accent text-accent-foreground border-[#1F2024] shadow-[2px_2px_0_#1F2024]"
                 : "text-foreground border-transparent hover:border-[#1F2024] hover:bg-accent/40"

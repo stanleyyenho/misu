@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -106,14 +106,13 @@ export function OnboardingModal({ initialEmail = "", initialPhone = "", onComple
               </div>
             </div>
 
-            <Button
+            <ActionButton
               className="w-full mt-5"
               disabled={!firstName.trim()}
               onClick={() => setStep(2)}
-              style={{ borderRadius: "8px" }}
             >
               Next →
-            </Button>
+            </ActionButton>
           </>
         )}
 
@@ -168,22 +167,12 @@ export function OnboardingModal({ initialEmail = "", initialPhone = "", onComple
             </div>
 
             <div className="flex gap-2 mt-5">
-              <Button
-                variant="outline"
-                onClick={() => setStep(1)}
-                className="flex-1"
-                style={{ borderRadius: "8px" }}
-              >
+              <ActionButton variant="outline" onClick={() => setStep(1)} className="flex-1">
                 ← Back
-              </Button>
-              <Button
-                onClick={handleFinish}
-                disabled={saving}
-                className="flex-1"
-                style={{ borderRadius: "8px" }}
-              >
+              </ActionButton>
+              <ActionButton onClick={handleFinish} disabled={saving} className="flex-1">
                 {saving ? "Saving..." : "Get started →"}
-              </Button>
+              </ActionButton>
             </div>
           </>
         )}

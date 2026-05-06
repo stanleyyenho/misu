@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { PhoneImportIllustration } from "@/components/illustrations/PhoneImportIllustration";
 
 interface ContactsManager {
@@ -104,14 +104,9 @@ export default function ImportPage() {
               Pick contacts directly from your iOS or Android contacts list.
             </p>
           </div>
-          <Button
-            onClick={handleNativeImport}
-            disabled={loading}
-            className="rounded-full font-bold border-2 border-[#1F2024]"
-            style={{ boxShadow: "2px 2px 0 #1F2024" }}
-          >
+          <ActionButton onClick={handleNativeImport} disabled={loading}>
             Open contacts list
-          </Button>
+          </ActionButton>
         </div>
       )}
 
@@ -172,9 +167,9 @@ export default function ImportPage() {
       )}
 
       <div className="mt-6 text-center">
-        <Button variant="outline" onClick={() => router.push("/contacts")} disabled={loading} className="rounded-full">
+        <ActionButton variant="outline" onClick={() => router.push("/contacts")} disabled={loading}>
           Cancel
-        </Button>
+        </ActionButton>
       </div>
     </div>
   );

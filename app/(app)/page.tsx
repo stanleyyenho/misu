@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ActionButton } from "@/components/ui/action-button";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -182,13 +183,12 @@ function ScheduleSomethingButton({
   return (
     <div ref={containerRef} className="w-full">
       {!expanded ? (
-        <button
+        <ActionButton
           onClick={() => setExpanded(true)}
-          className="w-full text-sm font-bold px-4 py-3 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
-          style={{ borderRadius: "10px", boxShadow: "4px 4px 0 #1F2024" }}
+          className="w-full py-3"
         >
           + Schedule something!
-        </button>
+        </ActionButton>
       ) : (
         <div className="grid grid-cols-3 gap-2">
           <button
@@ -261,22 +261,12 @@ function HangoutCompletionCard({ hangout, onUpdated }: { hangout: DashboardHango
           </p>
         </div>
         <div className="flex gap-1.5 shrink-0">
-          <button
-            onClick={() => handle("complete")}
-            disabled={!!loading}
-            className="text-xs font-bold px-2.5 py-1.5 border-2 border-[#1F2024] bg-[#1F2024] text-white"
-            style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024", opacity: loading ? 0.6 : 1 }}
-          >
+          <ActionButton size="sm" onClick={() => handle("complete")} disabled={!!loading}>
             {loading === "complete" ? "..." : "Done"}
-          </button>
-          <button
-            onClick={() => handle("skip")}
-            disabled={!!loading}
-            className="text-xs font-bold px-2.5 py-1.5 border-2 border-[#1F2024]"
-            style={{ borderRadius: "8px", opacity: loading ? 0.6 : 1 }}
-          >
+          </ActionButton>
+          <ActionButton size="sm" variant="outline" onClick={() => handle("skip")} disabled={!!loading} style={{ boxShadow: "none" }}>
             {loading === "skip" ? "..." : "Skip"}
-          </button>
+          </ActionButton>
         </div>
       </div>
     </li>
@@ -589,13 +579,13 @@ export default function DashboardPage() {
                         </p>
                       )}
                     </div>
-                    <button
+                    <ActionButton
+                      size="sm"
                       onClick={() => setActiveCheckIn(ci)}
-                      className="shrink-0 text-sm font-bold px-3 py-2 border-2 border-[#1F2024] bg-[#1F2024] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
-                      style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024" }}
+                      className="shrink-0"
                     >
                       send
-                    </button>
+                    </ActionButton>
                   </div>
                 </li>
               );

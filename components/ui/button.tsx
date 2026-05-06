@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground border-[var(--shadow-hard)] shadow-[2px_2px_0_var(--shadow-hard)] active:not-aria-[haspopup]:shadow-none hover:shadow-[3px_3px_0_var(--shadow-hard)] hover:-translate-x-px hover:-translate-y-px",
+          "bg-[var(--button-fill)] text-primary-foreground border-[var(--shadow-hard)] shadow-[2px_2px_0_var(--shadow-hard)] active:not-aria-[haspopup]:shadow-none hover:shadow-[3px_3px_0_var(--shadow-hard)] hover:-translate-x-px hover:-translate-y-px",
         outline:
           "border-[var(--shadow-hard)] bg-background text-foreground shadow-[2px_2px_0_var(--shadow-hard)] active:not-aria-[haspopup]:shadow-none hover:shadow-[3px_3px_0_var(--shadow-hard)] hover:-translate-x-px hover:-translate-y-px hover:bg-muted",
         secondary:

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
@@ -142,7 +142,7 @@ export default function NewContactPage() {
                 className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
                 style={{
                   borderRadius: "8px",
-                  backgroundColor: platform === p.id ? "#1F2024" : "transparent",
+                  backgroundColor: platform === p.id ? "var(--button-fill)" : "transparent",
                   color: platform === p.id ? "#FFFFFF" : "#1F2024",
                   boxShadow: platform === p.id ? "2px 2px 0 #1F2024" : "none",
                 }}
@@ -157,14 +157,13 @@ export default function NewContactPage() {
         </div>
 
         <div className="pt-2">
-          <Button
+          <ActionButton
             type="submit"
             disabled={saving || !firstName.trim()}
             className="w-full"
-            style={{ borderRadius: "8px" }}
           >
             {saving ? "Adding..." : "Add contact"}
-          </Button>
+          </ActionButton>
           <p className="text-xs text-muted-foreground text-center mt-3">
             You can set up a check-in cadence on the next screen
           </p>

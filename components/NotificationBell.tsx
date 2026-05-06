@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/ui/action-button";
 import { toast } from "sonner";
 
 function isIos() {
@@ -86,14 +86,13 @@ export function NotificationBell() {
   if (status === "unsupported") return null;
 
   return (
-    <Button
+    <ActionButton
       variant={status === "denied" ? "ghost" : "outline"}
       size="sm"
       onClick={subscribe}
-      className="text-sm"
     >
       {status === "denied" ? "Notifications blocked" : "Enable notifications"}
-    </Button>
+    </ActionButton>
   );
 }
 
