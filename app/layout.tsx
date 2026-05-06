@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Nunito, Nunito_Sans, Silkscreen, Space_Grotesk, Space_Mono, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -75,16 +76,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${nunito.variable} ${nunitoSans.variable} ${silkscreen.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${bricolage.variable} antialiased`} style={{ fontFamily: "var(--font-space-grotesk), var(--font-nunito), sans-serif" }}>
-        {children}
-        <Toaster
-          position="bottom-center"
-          toastOptions={{
-            className: "rounded-2xl font-sans",
-            style: { fontFamily: "var(--font-sans)" },
-          }}
-        />
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster
+            position="bottom-center"
+            toastOptions={{
+              className: "rounded-2xl font-sans",
+              style: { fontFamily: "var(--font-sans)" },
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

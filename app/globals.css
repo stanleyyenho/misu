@@ -129,46 +129,70 @@
   --splash-turquoise:  #A8E6D9;
 }
 
+/* Dark mode — chalkboard philosophy.
+   The page is deep ink; "ink" becomes warm cream. Hard shadows stay cream
+   so cards float (border lighter than the surface beneath). Sage stays exact
+   as the brand mark. Splash pastels mute ~15% so they don't vibrate. */
 .dark {
-  --button-fill: #C0C0C0;
-  --background: #111111;
-  --foreground: #F5F5F5;
-  --card: #1C1C1C;
-  --card-foreground: #F5F5F5;
-  --popover: #1C1C1C;
-  --popover-foreground: #F5F5F5;
-  --primary: #F5F5F5;
-  --primary-foreground: #111111;
-  --secondary: #2A2A2A;
-  --secondary-foreground: #F5F5F5;
-  --muted: #2A2A2A;
-  --muted-foreground: #999999;
-  --accent: #BCE8DC;
-  --accent-foreground: #111111;
+  --background: #1A1A1E;            /* the chalkboard */
+  --foreground: #F0E9DD;            /* warm cream — the new ink */
+  --card: #26272C;                  /* a dark sheet, slightly lifted */
+  --card-foreground: #F0E9DD;
+  --popover: #26272C;
+  --popover-foreground: #F0E9DD;
+
+  --primary: #F0E9DD;
+  --primary-foreground: #1A1A1E;
+  --button-fill: #C8C0B2;           /* slightly dimmer cream for filled-button bg */
+
+  --secondary: #2E2F35;
+  --secondary-foreground: #F0E9DD;
+
+  --muted: #34353B;
+  --muted-foreground: #9A938A;      /* warm gray, not cool */
+
+  --accent: #BCE8DC;                /* unchanged — sage glows on dark */
+  --accent-foreground: #1A1A1E;
+
   --destructive: #FF6B5E;
-  --destructive-foreground: #FFFFFF;
-  --border: #333333;
-  --input: #F5F5F5;
+  --destructive-foreground: #1A1A1E;
+
+  --border: #3A3B41;
+  --input: #F0E9DD;
   --ring: #BCE8DC;
-  --shadow-hard: #F5F5F5;
+
+  --shadow-hard: #F0E9DD;           /* cream — reads as a lift on dark */
   --shadow-1: 1px 1px 0 var(--shadow-hard);
   --shadow-2: 2px 2px 0 var(--shadow-hard);
   --shadow-3: 3px 3px 0 var(--shadow-hard);
   --shadow-4: 4px 4px 0 var(--shadow-hard);
   --shadow-6: 6px 6px 0 var(--shadow-hard);
-  --sidebar: #1A1A1A;
-  --sidebar-foreground: #F5F5F5;
-  --sidebar-primary: #F5F5F5;
-  --sidebar-primary-foreground: #111111;
-  --sidebar-accent: #FFE93E;
-  --sidebar-accent-foreground: #111111;
-  --sidebar-border: #333333;
+
+  --sidebar: #1F2024;
+  --sidebar-foreground: #F0E9DD;
+  --sidebar-primary: #F0E9DD;
+  --sidebar-primary-foreground: #1A1A1E;
+  --sidebar-accent: #D9C634;
+  --sidebar-accent-foreground: #1A1A1E;
+  --sidebar-border: #3A3B41;
   --sidebar-ring: #BCE8DC;
-  --chart-1: #BCE8DC;
-  --chart-2: #5BC4F5;
-  --chart-3: #FF6B9D;
-  --chart-4: #7EE8A2;
-  --chart-5: #FFB347;
+
+  /* Splash palette — muted ~15% for dark surfaces */
+  --splash-yellow:    #D9C634;
+  --splash-sage:      #9CCBBF;
+  --splash-sky:       #4DA6CF;
+  --splash-pink:      #D85B85;
+  --splash-mint:      #6BC589;
+  --splash-orange:    #D89740;
+  --splash-lavender:  #A68FD9;
+  --splash-coral:     #D87575;
+  --splash-turquoise: #8FC4B8;
+
+  --chart-1: #9CCBBF;
+  --chart-2: #4DA6CF;
+  --chart-3: #D85B85;
+  --chart-4: #6BC589;
+  --chart-5: #D89740;
 }
 
 @layer base {
@@ -222,6 +246,37 @@
     linear-gradient(to right, rgba(17,17,17,0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(17,17,17,0.06) 1px, transparent 1px);
   background-size: 8px 8px;
+}
+
+/* Texture utilities use baked-in ink rgba — provide cream-ink versions for dark */
+.dark .crosshatch {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(240,233,221,0.18) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(-45deg,
+      rgba(240,233,221,0.18) 0 1px, transparent 1px 6px);
+}
+.dark .crosshatch-light {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(240,233,221,0.10) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg,
+      rgba(240,233,221,0.10) 0 1px, transparent 1px 7px);
+}
+.dark .crosshatch-dense {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(240,233,221,0.30) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg,
+      rgba(240,233,221,0.30) 0 1px, transparent 1px 4px);
+}
+.dark .stipple-dots {
+  background-image: radial-gradient(rgba(240,233,221,0.24) 1px, transparent 1.2px);
+}
+.dark .pixel-grid {
+  background-image:
+    linear-gradient(to right, rgba(240,233,221,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(240,233,221,0.08) 1px, transparent 1px);
 }
 
 /* iOS safe area for bottom nav */
@@ -321,4 +376,46 @@
 }
 .misu-cal-card .fc .fc-daygrid-day-number.fc-overdue {
   color: var(--destructive);
+}
+
+/* Dark mode FullCalendar — cream-on-chalkboard, muted yellow today highlight */
+.dark .misu-cal-card .fc-header-toolbar.fc-toolbar {
+  background: var(--card);
+  color: var(--foreground);
+  border-bottom-color: var(--foreground);
+}
+.dark .misu-cal-card .fc .fc-toolbar-title {
+  color: var(--foreground);
+}
+.dark .misu-cal-card .fc .fc-button {
+  border-color: var(--foreground) !important;
+  color: var(--foreground) !important;
+}
+.dark .misu-cal-card .fc .fc-button:hover {
+  background-color: var(--foreground) !important;
+  color: var(--card) !important;
+}
+.dark .misu-cal-card .fc .fc-button-active {
+  background-color: var(--splash-yellow) !important;
+  border-color: var(--splash-yellow) !important;
+  color: var(--background) !important;
+}
+.dark .misu-cal-card .fc .fc-event {
+  border-color: var(--foreground) !important;
+  box-shadow: 1px 1px 0 var(--foreground);
+}
+.dark .misu-cal-card .fc-theme-standard td,
+.dark .misu-cal-card .fc-theme-standard th {
+  border-color: var(--border) !important;
+}
+.dark .misu-cal-card .fc-theme-standard th {
+  background: var(--card);
+  border-bottom-color: var(--foreground) !important;
+}
+.dark .misu-cal-card .fc .fc-day-today {
+  background-color: rgba(217, 198, 52, 0.18) !important;
+}
+.dark .misu-cal-card .fc .fc-col-header-cell-cushion,
+.dark .misu-cal-card .fc .fc-daygrid-day-number {
+  color: var(--foreground);
 }

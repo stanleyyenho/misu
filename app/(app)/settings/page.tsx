@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -269,6 +270,17 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground mt-1.5">
           Stored locally on your device — never sent to our servers
         </p>
+      </section>
+
+      <Separator className="mb-6" />
+
+      {/* Appearance */}
+      <section className="mb-6">
+        <SectionHeader label="appearance" />
+        <p className="text-sm text-muted-foreground mb-3">
+          Switch between paper and chalkboard.
+        </p>
+        <ThemeToggle />
       </section>
 
       <Separator className="mb-6" />
