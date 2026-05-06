@@ -6,7 +6,6 @@ import { format, isToday, isTomorrow, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import { getAvatarColor } from "@/lib/avatar-color";
 import { MessagePreview } from "@/components/MessagePreview";
-import { SunnyDayIllustration } from "@/components/illustrations/SunnyDayIllustration";
 import { RecurringHangoutDetailModal, type RecurringSchedule } from "@/components/RecurringHangoutDetailModal";
 import { CalendarEventModal, type CheckInDetail, type HangoutDetail } from "@/components/CalendarEventModal";
 import { AddRecurringHangoutSheet } from "@/components/AddRecurringHangoutSheet";
@@ -351,15 +350,8 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : recurringSchedules.length === 0 ? (
-            <div
-              className="rounded-[10px] border-2 border-[#1F2024] bg-card p-6 flex flex-col items-center gap-3 text-center"
-              style={{ boxShadow: "4px 4px 0 #1F2024" }}
-            >
-              <SunnyDayIllustration size={64} />
-              <div>
-                <p className="font-bold">all caught up!</p>
-                <p className="text-sm text-muted-foreground mt-0.5">No recurring hangouts set up yet.</p>
-              </div>
+            <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center flex flex-col items-center gap-1.5">
+              <p className="text-sm text-muted-foreground">No recurring hangouts set up yet.</p>
               <button
                 onClick={() => setAddRecurringOpen(true)}
                 className="text-sm font-bold underline underline-offset-2"
@@ -425,15 +417,8 @@ export default function DashboardPage() {
           {isLoading ? (
             <div className="h-[72px] rounded-[10px] border-2 border-[#1F2024] bg-secondary animate-pulse" style={{ boxShadow: "4px 4px 0 #1F2024" }} />
           ) : oneTimeHangouts.length === 0 ? (
-            <div
-              className="rounded-[10px] border-2 border-[#1F2024] bg-card p-6 flex flex-col items-center gap-3 text-center"
-              style={{ boxShadow: "4px 4px 0 #1F2024" }}
-            >
-              <SunnyDayIllustration size={64} />
-              <div>
-                <p className="font-bold">all caught up!</p>
-                <p className="text-sm text-muted-foreground mt-0.5">No one-time hangouts coming up.</p>
-              </div>
+            <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center flex flex-col items-center gap-1.5">
+              <p className="text-sm text-muted-foreground">No one-time hangouts coming up.</p>
               <button
                 onClick={() => setAddOneTimeOpen(true)}
                 className="text-sm font-bold underline underline-offset-2"
@@ -505,15 +490,8 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : messageCheckIns.length === 0 ? (
-          <div
-            className="rounded-[10px] border-2 border-[#1F2024] bg-card p-6 flex flex-col items-center gap-3 text-center"
-            style={{ boxShadow: "4px 4px 0 #1F2024" }}
-          >
-            <SunnyDayIllustration size={64} />
-            <div>
-              <p className="font-bold">all caught up!</p>
-              <p className="text-sm text-muted-foreground mt-0.5">No check-in messages scheduled.</p>
-            </div>
+          <div className="rounded-[10px] border-2 border-dashed border-[#DEDEDE] p-4 text-center flex flex-col items-center gap-1.5">
+            <p className="text-sm text-muted-foreground">No check-in messages scheduled.</p>
             <button
               onClick={() => setAddCheckInOpen(true)}
               className="text-sm font-bold underline underline-offset-2"
