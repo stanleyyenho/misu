@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Nunito_Sans, Caveat, Silkscreen, Space_Grotesk, Space_Mono, Bricolage_Grotesque } from "next/font/google";
+import { Nunito, Nunito_Sans, Silkscreen, Space_Grotesk, Space_Mono, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -13,12 +13,6 @@ const nunitoSans = Nunito_Sans({
   variable: "--font-nunito-sans",
   subsets: ["latin"],
   weight: ["400", "600"],
-});
-
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
 const silkscreen = Silkscreen({
@@ -82,7 +76,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${nunito.variable} ${nunitoSans.variable} ${caveat.variable} ${silkscreen.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${bricolage.variable} antialiased`} style={{ fontFamily: "var(--font-space-grotesk), var(--font-nunito), sans-serif" }}>
+      <body className={`${nunito.variable} ${nunitoSans.variable} ${silkscreen.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${bricolage.variable} antialiased`} style={{ fontFamily: "var(--font-space-grotesk), var(--font-nunito), sans-serif" }}>
         {children}
         <Toaster
           position="bottom-center"
