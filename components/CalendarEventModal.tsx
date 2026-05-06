@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ActionButton } from "@/components/ui/action-button";
 import { LocationSearch, type LocationResult } from "@/components/LocationSearch";
+import { ScheduleForm } from "@/components/ScheduleForm";
 import { getAvatarColor } from "@/lib/avatar-color";
 
 // ─── icons ───────────────────────────────────────────────────────────────────
@@ -162,11 +163,13 @@ function hangoutTypeLabel(data: HangoutDetail) {
 function CheckInDetailView({
   data,
   onSend,
+  onEditCadence,
   onSkip,
   onReschedule,
 }: {
   data: CheckInDetail;
   onSend?: () => void;
+  onEditCadence: () => void;
   onSkip: () => void;
   onReschedule: () => void;
 }) {
@@ -202,10 +205,16 @@ function CheckInDetailView({
 
       {/* Actions */}
       <div className="flex flex-col gap-2 sm:flex-row">
-        {onSend && (
-          <ActionButton onClick={onSend} className="flex-1">
-            {isHangoutMode ? "Send invite →" : "Send message →"}
+        {isHangoutMode ? (
+          <ActionButton onClick={onEditCadence} className="flex-1">
+            Edit cadence
           </ActionButton>
+        ) : (
+          onSend && (
+            <ActionButton onClick={onSend} className="flex-1">
+              Send message →
+            </ActionButton>
+          )
         )}
         <ActionButton variant="outline" onClick={onReschedule} className="flex-1">
           Reschedule
@@ -214,6 +223,127 @@ function CheckInDetailView({
           Skip
         </ActionButton>
       </div>
+    </div>
+  );
+}
+
+// ─── cadence scope picker ─────────────────────────────────────────────────────
+
+function CadenceScopeView({
+  onPickAll,
+  onPickFollowing,
+  onPickJustThis,
+  onBack,
+}: {
+  onPickAll: () => void;
+  onPickFollowing: () => void;
+  onPickJustThis: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        What should this edit apply to?
+      </p>
+      <div className="flex flex-col gap-2">
+        <ActionButton onClick={onPickAll}>
+          All instances
+        </ActionButton>
+        <ActionButton variant="outline" onClick={onPickFollowing}>
+          This and all following
+        </ActionButton>
+        <ActionButton variant="outline" onClick={onPickJustThis}>
+          Just this one
+        </ActionButton>
+        <ActionButton variant="ghost" onClick={onBack}>
+          ← Back
+        </ActionButton>
+      </div>
+    </div>
+  );
+}
+
+// ─── edit cadence view (loads full schedule, renders ScheduleForm) ───────────
+
+interface FullSchedule {
+  frequencyDays: number;
+  tone: string;
+  approveBeforeSend: boolean;
+  hangoutType: string;
+  cadenceMode: string;
+  leadTimeDays: number;
+  defaultHangout: string | null;
+  noteToFriend: string | null;
+}
+
+function EditCadenceView({
+  contactId,
+  contactPhone,
+  contactPlatform,
+  onBack,
+  onSaved,
+}: {
+  contactId: string;
+  contactPhone: string | null;
+  contactPlatform: string | null;
+  onBack: () => void;
+  onSaved: () => void;
+}) {
+  const [schedule, setSchedule] = useState<FullSchedule | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/contacts/${contactId}`);
+        if (!res.ok) throw new Error();
+        const body = await res.json();
+        if (!cancelled) setSchedule(body.schedule);
+      } catch {
+        if (!cancelled) toast.error("Couldn't load schedule");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [contactId]);
+
+  if (loading || !schedule) {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">Loading schedule…</p>
+        <ActionButton variant="ghost" onClick={onBack}>← Back</ActionButton>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-1">
+      <button
+        type="button"
+        onClick={onBack}
+        className="text-xs text-muted-foreground hover:text-foreground mb-4 flex items-center gap-1"
+      >
+        ← Back
+      </button>
+      <ScheduleForm
+        sectionMode="hangout"
+        contactId={contactId}
+        contactPhone={contactPhone}
+        contactPlatform={contactPlatform}
+        initialFrequencyDays={schedule.frequencyDays}
+        initialTone={schedule.tone}
+        initialApproveBeforeSend={schedule.approveBeforeSend}
+        initialHangoutType={schedule.hangoutType}
+        initialCadenceMode={schedule.cadenceMode}
+        initialLeadTimeDays={schedule.leadTimeDays}
+        initialDefaultHangout={
+          schedule.defaultHangout ? JSON.parse(schedule.defaultHangout) : null
+        }
+        initialNoteToFriend={schedule.noteToFriend}
+        onSaved={onSaved}
+      />
     </div>
   );
 }
@@ -472,7 +602,9 @@ function RescheduleView({
 export function CalendarEventModal(props: CalendarEventModalProps) {
   const { onClose, onUpdate } = props;
   const router = useRouter();
-  const [view, setView] = useState<"detail" | "edit" | "reschedule">("detail");
+  const [view, setView] = useState<
+    "detail" | "edit" | "reschedule" | "cadence-scope" | "edit-cadence"
+  >("detail");
   const [actionLoading, setActionLoading] = useState(false);
 
   const name =
@@ -569,6 +701,7 @@ export function CalendarEventModal(props: CalendarEventModalProps) {
               }
               return props.onSend ? () => props.onSend!(props.data) : undefined;
             })()}
+            onEditCadence={() => setView("cadence-scope")}
             onSkip={skipCheckIn}
             onReschedule={() => setView("reschedule")}
           />
@@ -579,6 +712,25 @@ export function CalendarEventModal(props: CalendarEventModalProps) {
             checkInId={props.data.id}
             onBack={() => setView("detail")}
             onUpdated={onUpdate}
+          />
+        )}
+
+        {props.kind === "checkin" && view === "cadence-scope" && (
+          <CadenceScopeView
+            onPickAll={() => setView("edit-cadence")}
+            onPickFollowing={() => setView("edit-cadence")}
+            onPickJustThis={() => setView("reschedule")}
+            onBack={() => setView("detail")}
+          />
+        )}
+
+        {props.kind === "checkin" && view === "edit-cadence" && (
+          <EditCadenceView
+            contactId={props.data.contact.id}
+            contactPhone={props.data.contact.phone}
+            contactPlatform={props.data.contact.messagingPlatform}
+            onBack={() => setView("cadence-scope")}
+            onSaved={onUpdate}
           />
         )}
 
