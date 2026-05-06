@@ -34,7 +34,8 @@ export default function MarketingPage() {
             be with the
             <br />
             people who 
-            <br /> <span className={styles.accentWord}>matter</span>
+            <br />
+            <span className={styles.accentWord}>matter</span>
           </h1>
 
           <p className={styles.heroSub}>
