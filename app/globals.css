@@ -225,64 +225,96 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* FullCalendar overrides */
-.fc .fc-toolbar-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  font-family: var(--font-silkscreen), var(--font-sans);
-  letter-spacing: 0.01em;
+/* FullCalendar overrides — marketing-card design */
+.misu-cal-card .fc-header-toolbar.fc-toolbar {
+  background: #1F2024;
+  color: #fff;
+  margin: 0 !important;
+  padding: 10px 14px;
+  border-bottom: 2px solid #1F2024;
 }
-.fc .fc-button {
-  background-color: var(--primary) !important;
-  border: 2px solid var(--primary) !important;
-  color: var(--primary-foreground) !important;
+.misu-cal-card .fc .fc-toolbar-title {
+  font-size: 13px;
+  font-weight: 400;
+  font-family: var(--font-pixel-display), var(--font-silkscreen), ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.misu-cal-card .fc .fc-button {
+  background-color: transparent !important;
+  border: 2px solid #fff !important;
+  color: #fff !important;
   border-radius: 999px !important;
-  font-size: 0.78rem !important;
-  padding: 0.25rem 0.75rem !important;
+  font-size: 0.72rem !important;
+  padding: 0.2rem 0.7rem !important;
   font-family: var(--font-sans) !important;
   font-weight: 700 !important;
-  box-shadow: 2px 2px 0 var(--shadow-hard) !important;
-  transition: box-shadow 0.1s, transform 0.1s !important;
-}
-.fc .fc-button:hover {
-  box-shadow: 3px 3px 0 var(--shadow-hard) !important;
-  transform: translate(-1px, -1px) !important;
-}
-.fc .fc-button:active {
   box-shadow: none !important;
-  transform: translate(2px, 2px) !important;
+  text-transform: lowercase;
+  transition: background-color 0.1s, color 0.1s !important;
 }
-.fc .fc-button-active {
-  background-color: var(--accent) !important;
-  border-color: var(--primary) !important;
-  color: var(--accent-foreground) !important;
+.misu-cal-card .fc .fc-button:hover {
+  background-color: #fff !important;
+  color: #1F2024 !important;
 }
-.fc .fc-event {
+.misu-cal-card .fc .fc-button:disabled {
+  opacity: 0.5;
+}
+.misu-cal-card .fc .fc-button-active {
+  background-color: #FFE93E !important;
+  border-color: #FFE93E !important;
+  color: #1F2024 !important;
+}
+.misu-cal-card .fc .fc-button-primary:focus,
+.misu-cal-card .fc .fc-button-primary:not(:disabled):active:focus {
+  box-shadow: none !important;
+}
+.misu-cal-card .fc .fc-event {
   cursor: pointer;
   border-radius: 999px !important;
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 1px 6px !important;
-  border: 2px solid var(--primary) !important;
+  padding: 1px 8px !important;
+  border: 2px solid #1F2024 !important;
+  box-shadow: 1px 1px 0 #1F2024;
 }
-.fc-theme-standard td,
-.fc-theme-standard th,
-.fc-theme-standard .fc-scrollgrid {
-  border-color: var(--border) !important;
+.misu-cal-card .fc-theme-standard td,
+.misu-cal-card .fc-theme-standard th {
+  border-color: #E8E8E8 !important;
 }
-.fc .fc-day-today {
-  background-color: #BCE8DC33 !important;
+.misu-cal-card .fc-theme-standard .fc-scrollgrid {
+  border: none !important;
 }
-.fc .fc-daygrid-event {
+.misu-cal-card .fc-theme-standard th {
+  background: #FAFAFA;
+  border-bottom: 2px solid #1F2024 !important;
+}
+.misu-cal-card .fc .fc-day-today {
+  background-color: #FFE93E33 !important;
+}
+.misu-cal-card .fc .fc-daygrid-event {
   border-radius: 999px !important;
 }
-.fc .fc-col-header-cell-cushion,
-.fc .fc-daygrid-day-number {
-  color: var(--foreground);
+.misu-cal-card .fc .fc-col-header-cell-cushion {
+  color: #1F2024;
   text-decoration: none;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 8px 6px;
 }
-.fc .fc-daygrid-day-number.fc-overdue {
+.misu-cal-card .fc .fc-daygrid-day-number {
+  color: #1F2024;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 6px 8px;
+}
+.misu-cal-card .fc .fc-day-other .fc-daygrid-day-number {
+  opacity: 0.35;
+}
+.misu-cal-card .fc .fc-daygrid-day-number.fc-overdue {
   color: var(--destructive);
 }
