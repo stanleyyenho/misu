@@ -143,7 +143,7 @@ export async function GET() {
           },
         },
         orderBy: { completedAt: "desc" },
-        take: 8,
+        take: 5,
       }),
 
       prisma.userProfile.findUnique({ where: { userId: user.id } }),
