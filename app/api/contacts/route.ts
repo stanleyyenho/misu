@@ -34,14 +34,24 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes } = body;
+  const { firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes, smsConsentAt } = body;
 
   if (!firstName) {
     return NextResponse.json({ error: "firstName is required" }, { status: 400 });
   }
 
   const contact = await prisma.contact.create({
-    data: { userId: user.id, firstName, lastName, email, phone, avatarUrl, messagingPlatform, notes },
+    data: {
+      userId: user.id,
+      firstName,
+      lastName,
+      email,
+      phone,
+      avatarUrl,
+      messagingPlatform,
+      notes,
+      smsConsentAt: smsConsentAt ? new Date(smsConsentAt) : undefined,
+    },
   });
 
   revalidateTag("contacts", "max");

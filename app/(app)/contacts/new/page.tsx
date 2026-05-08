@@ -23,11 +23,13 @@ export default function NewContactPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [platform, setPlatform] = useState("");
+  const [smsConsent, setSmsConsent] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!firstName.trim()) { toast.error("First name is required"); return; }
+    if (phone.trim() && !smsConsent) { toast.error("Please confirm SMS consent before saving"); return; }
 
     setSaving(true);
     try {
@@ -40,6 +42,7 @@ export default function NewContactPage() {
           phone: phone.trim() || null,
           email: email.trim() || null,
           messagingPlatform: platform || null,
+          smsConsentAt: phone.trim() && smsConsent ? new Date().toISOString() : undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -112,7 +115,7 @@ export default function NewContactPage() {
           <Input
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => { setPhone(e.target.value); if (!e.target.value.trim()) setSmsConsent(false); }}
             placeholder="+1 555 000 0000"
             style={{ borderRadius: "8px" }}
           />
@@ -128,6 +131,32 @@ export default function NewContactPage() {
             style={{ borderRadius: "8px" }}
           />
         </div>
+
+        {phone.trim() && (
+          <div
+            className="flex gap-3 p-3 rounded-lg border-2 cursor-pointer select-none"
+            style={{
+              borderColor: smsConsent ? "var(--button-fill)" : "#DEDEDE",
+              backgroundColor: smsConsent ? "color-mix(in srgb, var(--button-fill) 8%, transparent)" : "transparent",
+            }}
+            onClick={() => setSmsConsent((v) => !v)}
+          >
+            {/* Checkbox */}
+            <div
+              className="mt-0.5 flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center"
+              style={{ borderColor: smsConsent ? "var(--button-fill)" : "#999", backgroundColor: smsConsent ? "var(--button-fill)" : "transparent" }}
+            >
+              {smsConsent && (
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+            <p className="text-xs leading-relaxed" style={{ color: "#333" }}>
+              I confirm that <strong>{firstName.trim() || "this contact"}</strong> has given me permission to send them SMS hangout invitations and reminders through Misu. They can reply <strong>STOP</strong> at any time to opt out.
+            </p>
+          </div>
+        )}
 
         <div>
           <Label className="mb-2 block text-xs font-bold uppercase tracking-wide">
