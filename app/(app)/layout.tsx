@@ -35,12 +35,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Only show onboarding when we have a confirmed profile with onboardingComplete === false.
-  // Errors (transient 500s, network blips) must not trigger the modal — middleware handles 401s.
+  // SWR sets `data` to undefined while loading; a successful fetch returning no
+  // profile yet is `null`. Treat null as "needs onboarding" so new users (no
+  // UserProfile row) actually see the modal. Errors must not trigger it —
+  // middleware handles 401s, and transient 500s shouldn't surface the modal.
   const onboarding =
-    !profile && !error
+    profile === undefined && !error
       ? "loading"
-      : profile && !profile.onboardingComplete
+      : !error && (!profile || !profile.onboardingComplete)
         ? "needed"
         : "done";
 
