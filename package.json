@@ -10,7 +10,11 @@
     "db:migrate": "DATABASE_URL=${DIRECT_URL:-$DATABASE_URL} bun --bun run prisma migrate dev",
     "db:migrate:deploy": "DATABASE_URL=${DIRECT_URL:-$DATABASE_URL} bun --bun run prisma migrate deploy",
     "db:generate": "bun --bun run prisma generate",
-    "postinstall": "bun --bun run prisma generate"
+    "postinstall": "bun --bun run prisma generate",
+    "test": "bun --bun node_modules/vitest/vitest.mjs run",
+    "test:watch": "bun --bun node_modules/vitest/vitest.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
@@ -49,6 +53,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/node-cron": "^3.0.11",
@@ -56,10 +61,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
+    "@vitest/ui": "^4.1.5",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   },
   "ignoreScripts": [
     "sharp",
