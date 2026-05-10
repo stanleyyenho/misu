@@ -1,9 +1,37 @@
 "use client";
 
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import dynamic from "next/dynamic";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import type { ComponentProps } from "react";
+import type FullCalendarComponent from "@fullcalendar/react";
+
+// FullCalendar + its plugins are ~250kB gz. The desktop calendar is hidden
+// behind `md:` so phone visitors never paint it; defer the import so the
+// calendar page becomes interactive without waiting for the bundle. We bake
+// the plugins into the lazy wrapper so the only client API is the prop set
+// the call site uses below.
+type FullCalendarProps = Omit<ComponentProps<typeof FullCalendarComponent>, "plugins">;
+
+const FullCalendarLazy = dynamic<FullCalendarProps>(
+  () =>
+    Promise.all([
+      import("@fullcalendar/react"),
+      import("@fullcalendar/daygrid"),
+      import("@fullcalendar/interaction"),
+    ]).then(([{ default: FullCalendar }, daygrid, interaction]) => {
+      function Wrapped(props: FullCalendarProps) {
+        return (
+          <FullCalendar
+            plugins={[daygrid.default, interaction.default]}
+            {...props}
+          />
+        );
+      }
+      Wrapped.displayName = "FullCalendarLazy";
+      return Wrapped;
+    }),
+  { ssr: false, loading: () => null },
+);
 import { format, isPast, differenceInCalendarDays } from "date-fns";
 import { CalendarEventModal, type CheckInDetail, type HangoutDetail } from "@/components/CalendarEventModal";
 import { RecurringHangoutDetailModal, type RecurringSchedule } from "@/components/RecurringHangoutDetailModal";
@@ -232,8 +260,7 @@ export function CalendarView() {
             boxShadow: "var(--shadow-4)",
           }}
         >
-          <FullCalendar
-            plugins={[dayGridPlugin, interactionPlugin]}
+          <FullCalendarLazy
             initialView="dayGridMonth"
             headerToolbar={{ left: "prev,next today", center: "title", right: "dayGridMonth,dayGridWeek" }}
             buttonText={{ today: "Today", month: "Month", week: "Week" }}
