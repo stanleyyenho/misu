@@ -16,14 +16,14 @@ const SIZE_RADIUS: Record<Size, string> = {
 };
 
 const SIZE_SHADOW: Record<Size, string> = {
-  sm: "2px 2px 0 #1F2024",
-  md: "4px 4px 0 #1F2024",
+  sm: "var(--shadow-2)",
+  md: "var(--shadow-4)",
 };
 
 const VARIANT_STYLE: Record<Variant, React.CSSProperties> = {
-  primary: { backgroundColor: "var(--button-fill)", color: "#fff" },
-  outline: { backgroundColor: "var(--card)", color: "#1F2024" },
-  ghost: { backgroundColor: "transparent", color: "#1F2024", borderColor: "transparent", boxShadow: "none" },
+  primary: { backgroundColor: "var(--button-fill)", color: "var(--primary-foreground)" },
+  outline: { backgroundColor: "var(--card)", color: "var(--foreground)" },
+  ghost: { backgroundColor: "transparent", color: "var(--foreground)", borderColor: "transparent", boxShadow: "none" },
   destructive: { backgroundColor: "var(--destructive)", color: "var(--destructive-foreground)" },
 };
 
@@ -53,7 +53,7 @@ export function ActionButton({
       type="button"
       className={[
         SIZE_CLASSES[size],
-        "border-2 border-[#1F2024] transition-all",
+        "border-2 border-foreground transition-all",
         "hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px",
         "disabled:opacity-50 disabled:pointer-events-none",
         className ?? "",
