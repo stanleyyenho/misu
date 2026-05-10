@@ -284,6 +284,10 @@ export default function LoginPage() {
             </div>
           )}
         </div>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          New to misu? Enter your email above to create an account.
+        </p>
       </div>
     </div>
   );
