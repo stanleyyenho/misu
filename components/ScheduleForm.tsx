@@ -378,7 +378,16 @@ export function ScheduleForm({
       {/* Perpetual default hangout details — hangout section only */}
       {sectionMode === "hangout" && cadenceMode === "perpetual" && (
         <div className="space-y-3 rounded-[10px] border-2 border-[#1F2024] p-4" style={{ boxShadow: "2px 2px 0 #1F2024" }}>
-          <p className="text-xs font-bold uppercase tracking-wide">Default hangout details</p>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide">
+              Default hangout details <span className="text-muted-foreground font-semibold normal-case">(optional)</span>
+            </p>
+            {hangoutType === "in-person" && (
+              <p className="text-xs text-muted-foreground mt-1">
+                If you skip this, Misu will send you a push notification 3 days before the lead time to pick a location. If you don&apos;t pick one in time, the invite goes out with the location as &quot;TBD&quot; and you&apos;ll get a daily reminder until you set one.
+              </p>
+            )}
+          </div>
           {hangoutType === "in-person" ? (
             <div>
               <Label className="mb-1.5 block text-xs font-semibold">Venue</Label>
