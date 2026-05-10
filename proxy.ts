@@ -2,7 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  // Strip any spoofed downstream-trust headers from incoming requests before we
+  // get a chance to set them ourselves. Anything an external client sends in
+  // these headers MUST be ignored — only the values we set after validating the
+  // JWT below can be trusted.
+  request.headers.delete("x-misu-user-id");
+  request.headers.delete("x-misu-user-email");
+  request.headers.delete("x-misu-user-phone");
+
+  // Capture cookies the Supabase SSR client wants to refresh; we'll apply them
+  // to the final response after we know what user this request is for.
+  const cookiesToApply: { name: string; value: string; options?: Record<string, unknown> }[] = [];
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,14 +22,9 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+        setAll(cookies) {
+          cookies.forEach(({ name, value }) => request.cookies.set(name, value));
+          cookiesToApply.push(...cookies);
         },
       },
     }
@@ -29,6 +34,19 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Forward validated identity to downstream RSC + route handlers via request
+  // headers so they don't have to round-trip to Supabase to re-validate.
+  if (user) {
+    request.headers.set("x-misu-user-id", user.id);
+    if (user.email) request.headers.set("x-misu-user-email", user.email);
+    if (user.phone) request.headers.set("x-misu-user-phone", user.phone);
+  }
+
+  const supabaseResponse = NextResponse.next({ request });
+  cookiesToApply.forEach(({ name, value, options }) =>
+    supabaseResponse.cookies.set(name, value, options),
+  );
 
   const { pathname } = request.nextUrl;
 

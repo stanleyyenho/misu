@@ -1,5 +1,6 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { requireEnv } from "@/lib/env";
 
 export async function createClient() {
@@ -27,10 +28,36 @@ export async function createClient() {
   );
 }
 
-export async function getUser() {
+// Minimal user shape — every call site only consumes id/email/phone.
+type AppUser = { id: string; email: string | null; phone: string | null };
+
+/**
+ * Resolve the authenticated user for the current request.
+ *
+ * Wrapped in React's `cache()` so any RSC + route handler that calls this
+ * multiple times in a single request only pays the cost once.
+ *
+ * Fast path: middleware (`proxy.ts`) already validates the JWT via
+ * `supabase.auth.getUser()` on every request and forwards the validated
+ * identity via `x-misu-user-*` request headers. Trusting those headers here
+ * saves a second round-trip to Supabase auth on every API call (~100–300ms).
+ *
+ * Slow fallback: if the headers are missing (cron jobs, webhooks, anything
+ * skipping middleware), revalidate against Supabase directly.
+ */
+export const getUser = cache(async (): Promise<AppUser | null> => {
+  const h = await headers();
+  const id = h.get("x-misu-user-id");
+  if (id) {
+    return {
+      id,
+      email: h.get("x-misu-user-email"),
+      phone: h.get("x-misu-user-phone"),
+    };
+  }
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
-}
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  return { id: user.id, email: user.email ?? null, phone: user.phone ?? null };
+});

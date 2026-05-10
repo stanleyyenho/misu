@@ -2,27 +2,15 @@ import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/supabase/server";
+import { loadContactsPageData } from "@/lib/loaders/contacts";
 
 export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const contacts = await prisma.contact.findMany({
-      where: { userId: user.id },
-      include: {
-        schedules: true,
-        groups: { select: { groupId: true } },
-      },
-      orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
-    });
-    // Expose check-in schedule as `schedule` for backward compat with client components
-    return NextResponse.json(
-      contacts.map((c) => ({
-        ...c,
-        schedule: c.schedules.find((s) => s.scheduleType === "check-in") ?? null,
-      }))
-    );
+    const { contacts } = await loadContactsPageData(user.id);
+    return NextResponse.json(contacts);
   } catch (err) {
     console.error("[GET /api/contacts]", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
