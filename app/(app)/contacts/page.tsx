@@ -82,8 +82,13 @@ export default function ContactsPage() {
           </div>
           <Link
             href="/contacts/new"
-            className="text-sm font-bold px-4 py-2 border-2 border-[#1F2024] bg-[var(--button-fill)] text-white transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
-            style={{ borderRadius: "8px", boxShadow: "2px 2px 0 #1F2024" }}
+            className="text-sm font-bold px-4 py-2 border-2 border-foreground transition-all hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+            style={{
+              borderRadius: "10px",
+              boxShadow: "var(--shadow-4)",
+              backgroundColor: "var(--button-fill)",
+              color: "var(--primary-foreground)",
+            }}
           >
             + Add
           </Link>
