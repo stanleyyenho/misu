@@ -8,11 +8,12 @@ import { processCadenceModes } from "@/lib/cadence-modes";
 // Called daily by Vercel Cron (see vercel.json) or any external cron service.
 // Protect with a secret so random people can't trigger it.
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
+  const headerSecret = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  const querySecret = new URL(request.url).searchParams.get("secret");
+  const provided = headerSecret || querySecret;
 
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || secret !== cronSecret) {
+  if (!cronSecret || provided !== cronSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
