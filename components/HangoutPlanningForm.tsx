@@ -30,12 +30,12 @@ function PillButton({
     <button
       type="button"
       onClick={onClick}
-      className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
+      className="text-sm font-bold px-3 py-1.5 border-2 border-foreground transition-all"
       style={{
         borderRadius: "8px",
         backgroundColor: active ? "var(--button-fill)" : "transparent",
-        color: active ? "#FFFFFF" : "#1F2024",
-        boxShadow: active ? "2px 2px 0 #1F2024" : "none",
+        color: active ? "var(--primary-foreground)" : "var(--foreground)",
+        boxShadow: active ? "var(--shadow-2)" : "none",
       }}
     >
       {children}
