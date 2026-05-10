@@ -225,11 +225,11 @@ export function CalendarView() {
       <div className="hidden md:block">
         {events.length === 0 ? emptyState : (
         <div
-          className="misu-cal-card bg-white overflow-hidden"
+          className="misu-cal-card bg-card overflow-hidden"
           style={{
-            border: "2px solid #1F2024",
+            border: "2px solid var(--foreground)",
             borderRadius: "10px",
-            boxShadow: "4px 4px 0 #1F2024",
+            boxShadow: "var(--shadow-4)",
           }}
         >
           <FullCalendar
@@ -262,17 +262,17 @@ export function CalendarView() {
             {monthGroups.map((group) => (
               <div
                 key={group.label}
-                className="bg-white overflow-hidden"
+                className="bg-card overflow-hidden"
                 style={{
-                  border: "2px solid #1F2024",
+                  border: "2px solid var(--foreground)",
                   borderRadius: "10px",
-                  boxShadow: "2px 2px 0 #1F2024",
+                  boxShadow: "var(--shadow-2)",
                 }}
               >
                 <div
                   style={{
-                    background: "#1F2024",
-                    color: "#fff",
+                    background: "var(--foreground)",
+                    color: "var(--background)",
                     fontFamily: "var(--font-pixel-display), ui-monospace, monospace",
                     fontSize: "11px",
                     letterSpacing: "0.12em",
