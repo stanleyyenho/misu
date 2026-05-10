@@ -2,16 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { format, isToday, isTomorrow, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import { getAvatarColor } from "@/lib/avatar-color";
-import { MessagePreview } from "@/components/MessagePreview";
-import { RecurringHangoutDetailModal, type RecurringSchedule } from "@/components/RecurringHangoutDetailModal";
-import { CalendarEventModal, type CheckInDetail, type HangoutDetail } from "@/components/CalendarEventModal";
-import { AddRecurringHangoutSheet } from "@/components/AddRecurringHangoutSheet";
-import { AddOneTimeHangoutSheet } from "@/components/AddOneTimeHangoutSheet";
-import { AddCheckInSheet } from "@/components/AddCheckInSheet";
+import type { RecurringSchedule } from "@/components/RecurringHangoutDetailModal";
+import type { HangoutDetail } from "@/components/CalendarEventModal";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +16,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ActionButton } from "@/components/ui/action-button";
+
+// These only mount on user interaction (tap a card / open a sheet). Splitting
+// them out of the initial bundle cuts JS parse time on the dashboard, which
+// matters most on mid-range mobile.
+const MessagePreview = dynamic(
+  () => import("@/components/MessagePreview").then((m) => m.MessagePreview),
+  { ssr: false },
+);
+const RecurringHangoutDetailModal = dynamic(
+  () => import("@/components/RecurringHangoutDetailModal").then((m) => m.RecurringHangoutDetailModal),
+  { ssr: false },
+);
+const CalendarEventModal = dynamic(
+  () => import("@/components/CalendarEventModal").then((m) => m.CalendarEventModal),
+  { ssr: false },
+);
+const AddRecurringHangoutSheet = dynamic(
+  () => import("@/components/AddRecurringHangoutSheet").then((m) => m.AddRecurringHangoutSheet),
+  { ssr: false },
+);
+const AddOneTimeHangoutSheet = dynamic(
+  () => import("@/components/AddOneTimeHangoutSheet").then((m) => m.AddOneTimeHangoutSheet),
+  { ssr: false },
+);
+const AddCheckInSheet = dynamic(
+  () => import("@/components/AddCheckInSheet").then((m) => m.AddCheckInSheet),
+  { ssr: false },
+);
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -767,23 +792,31 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
         />
       )}
 
-      <AddRecurringHangoutSheet
-        open={addRecurringOpen}
-        onOpenChange={setAddRecurringOpen}
-        onSaved={() => { setAddRecurringOpen(false); mutate(); }}
-      />
+      {/* Sheets are conditionally mounted so their dynamic chunks don't load
+          until the user actually opens one. */}
+      {addRecurringOpen && (
+        <AddRecurringHangoutSheet
+          open={addRecurringOpen}
+          onOpenChange={setAddRecurringOpen}
+          onSaved={() => { setAddRecurringOpen(false); mutate(); }}
+        />
+      )}
 
-      <AddOneTimeHangoutSheet
-        open={addOneTimeOpen}
-        onOpenChange={setAddOneTimeOpen}
-        onCreated={() => { setAddOneTimeOpen(false); mutate(); }}
-      />
+      {addOneTimeOpen && (
+        <AddOneTimeHangoutSheet
+          open={addOneTimeOpen}
+          onOpenChange={setAddOneTimeOpen}
+          onCreated={() => { setAddOneTimeOpen(false); mutate(); }}
+        />
+      )}
 
-      <AddCheckInSheet
-        open={addCheckInOpen}
-        onOpenChange={setAddCheckInOpen}
-        onSaved={() => { setAddCheckInOpen(false); mutate(); }}
-      />
+      {addCheckInOpen && (
+        <AddCheckInSheet
+          open={addCheckInOpen}
+          onOpenChange={setAddCheckInOpen}
+          onSaved={() => { setAddCheckInOpen(false); mutate(); }}
+        />
+      )}
     </div>
   );
 }
