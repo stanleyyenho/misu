@@ -14,6 +14,7 @@ export async function GET() {
       upcoming,
       oneTimeHangouts,
       awaitingCompletion,
+      needsVenue,
       recent,
       profile,
     ] = await Promise.all([
@@ -80,13 +81,22 @@ export async function GET() {
         orderBy: { scheduledAt: "asc" },
       }),
 
-      // One-time upcoming hangouts (no schedule link)
+      // One-time upcoming hangouts (no schedule link).
+      // Excludes hangouts surfaced in the "needs venue" section so they don't
+      // appear twice on the dashboard.
       prisma.hangout.findMany({
         where: {
           userId: user.id,
           checkInId: null,
           status: { in: ["draft", "invited", "confirmed"] },
           date: { gte: now },
+          NOT: {
+            AND: [
+              { type: "in-person" },
+              { locationName: null },
+              { OR: [{ locationPromptSentAt: { not: null } }, { locationTbdAt: { not: null } }] },
+            ],
+          },
         },
         select: {
           id: true,
@@ -103,6 +113,37 @@ export async function GET() {
         },
         orderBy: { date: "asc" },
         take: 10,
+      }),
+
+      // In-person hangouts inside the venue-prompt window with no location set.
+      // Surfaces both drafts (pre-prompt fired) and TBD invites (post-send nag).
+      prisma.hangout.findMany({
+        where: {
+          userId: user.id,
+          type: "in-person",
+          locationName: null,
+          status: { in: ["draft", "invited", "confirmed"] },
+          date: { gte: now },
+          OR: [
+            { locationPromptSentAt: { not: null } },
+            { locationTbdAt: { not: null } },
+          ],
+        },
+        select: {
+          id: true,
+          type: true,
+          status: true,
+          date: true,
+          locationName: true,
+          locationAddr: true,
+          platform: true,
+          meetingLink: true,
+          noteToFriend: true,
+          checkInId: true,
+          locationTbdAt: true,
+          contact: { select: { id: true, firstName: true, lastName: true, phone: true } },
+        },
+        orderBy: { date: "asc" },
       }),
 
       // Past hangouts awaiting completion
@@ -161,6 +202,7 @@ export async function GET() {
       messageCheckIns,
       oneTimeHangouts,
       awaitingCompletion,
+      needsVenue,
       recent,
       profile,
     });
