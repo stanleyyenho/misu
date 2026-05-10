@@ -67,12 +67,12 @@ function PillButton({
     <button
       type="button"
       onClick={onClick}
-      className="text-sm font-bold px-3 py-1.5 border-2 border-[#1F2024] transition-all"
+      className="text-sm font-bold px-3 py-1.5 border-2 border-foreground transition-all"
       style={{
         borderRadius: "8px",
         backgroundColor: active ? "var(--button-fill)" : "transparent",
-        color: active ? "#FFFFFF" : "#1F2024",
-        boxShadow: active ? "2px 2px 0 #1F2024" : "none",
+        color: active ? "var(--primary-foreground)" : "var(--foreground)",
+        boxShadow: active ? "var(--shadow-2)" : "none",
       }}
     >
       {children}
@@ -377,7 +377,7 @@ export function ScheduleForm({
 
       {/* Perpetual default hangout details — hangout section only */}
       {sectionMode === "hangout" && cadenceMode === "perpetual" && (
-        <div className="space-y-3 rounded-[10px] border-2 border-[#1F2024] p-4" style={{ boxShadow: "2px 2px 0 #1F2024" }}>
+        <div className="space-y-3 rounded-[10px] border-2 border-foreground p-4" style={{ boxShadow: "var(--shadow-2)" }}>
           <div>
             <p className="text-xs font-bold uppercase tracking-wide">
               Default hangout details <span className="text-muted-foreground font-semibold normal-case">(optional)</span>
@@ -466,16 +466,16 @@ export function ScheduleForm({
             <button
               type="button"
               onClick={() => setIncludeNote((v) => !v)}
-              className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-[#1F2024] transition-colors"
+              className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-foreground transition-colors"
               style={{ backgroundColor: includeNote ? "var(--button-fill)" : "transparent" }}
               aria-checked={includeNote}
               role="switch"
             >
               <span
-                className="pointer-events-none inline-block h-3 w-3 rounded-full bg-[#1F2024] shadow transition-transform"
+                className="pointer-events-none inline-block h-3 w-3 rounded-full shadow transition-transform"
                 style={{
                   transform: includeNote ? "translateX(16px)" : "translateX(2px)",
-                  backgroundColor: includeNote ? "#FFFFFF" : "#1F2024",
+                  backgroundColor: includeNote ? "var(--primary-foreground)" : "var(--foreground)",
                 }}
               />
             </button>
