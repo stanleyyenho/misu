@@ -159,6 +159,12 @@ model Hangout {
   meetingLink   String?
   noteToFriend  String?
   calInviteSent Boolean           @default(false)
+  // Set when the cron pushed a "pick a venue" prompt for an in-person hangout missing a location
+  locationPromptSentAt DateTime?
+  // Set when the invite went out without a location (rendered as "TBD")
+  locationTbdAt        DateTime?
+  // Last day a TBD daily-nag push was sent (used to throttle to once per day)
+  lastTbdReminderAt    DateTime?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   reminders     HangoutReminder[]
@@ -166,6 +172,7 @@ model Hangout {
 
   @@index([userId])
   @@index([userId, status, date])
+  @@index([locationTbdAt, locationName])
 }
 
 model HangoutReminder {

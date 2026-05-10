@@ -72,11 +72,16 @@ interface RecentActivity {
   } | null;
 }
 
+interface NeedsVenueHangout extends DashboardHangout {
+  locationTbdAt: string | null;
+}
+
 interface DashboardData {
   recurringSchedules: RecurringSchedule[];
   messageCheckIns: UpcomingCheckIn[];
   oneTimeHangouts: DashboardHangout[];
   awaitingCompletion: DashboardHangout[];
+  needsVenue: NeedsVenueHangout[];
   recent: RecentActivity[];
   profile: { firstName: string | null } | null;
 }
@@ -218,6 +223,52 @@ function ScheduleSomethingButton({
   );
 }
 
+// ─── needs-a-venue card ───────────────────────────────────────────────────────
+
+function NeedsVenueCard({
+  hangout,
+  onClick,
+}: {
+  hangout: NeedsVenueHangout;
+  onClick: () => void;
+}) {
+  const name = [hangout.contact.firstName, hangout.contact.lastName].filter(Boolean).join(" ");
+  const color = getAvatarColor(name);
+  const tbdSent = !!hangout.locationTbdAt;
+
+  return (
+    <li>
+      <button className="w-full text-left" onClick={onClick}>
+        <div
+          className="rounded-[10px] border-2 border-[#1F2024] bg-[var(--splash-pink)]/25 p-4 flex items-center gap-3"
+          style={{ boxShadow: "4px 4px 0 #1F2024" }}
+        >
+          <div
+            className="h-11 w-11 rounded-full border-2 border-[#1F2024] flex items-center justify-center shrink-0 crosshatch-light"
+            style={{ backgroundColor: color.bg }}
+          >
+            <span className="text-sm font-bold" style={{ color: color.fg }}>
+              {hangout.contact.firstName[0]}{hangout.contact.lastName?.[0] ?? ""}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold truncate">{name}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {format(new Date(hangout.date), "EEE, MMM d 'at' h:mm a")}
+            </p>
+            <p className="text-[11px] font-bold mt-0.5" style={{ color: "var(--destructive)" }}>
+              {tbdSent ? "Invite sent as TBD — tap to set venue" : "Pick a venue"}
+            </p>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-muted-foreground shrink-0">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </div>
+      </button>
+    </li>
+  );
+}
+
 // ─── awaiting completion card ─────────────────────────────────────────────────
 
 function HangoutCompletionCard({ hangout, onUpdated }: { hangout: DashboardHangout; onUpdated: () => void }) {
@@ -349,8 +400,26 @@ export default function DashboardPage() {
   const messageCheckIns = data?.messageCheckIns ?? [];
   const oneTimeHangouts = data?.oneTimeHangouts ?? [];
   const awaitingCompletion = data?.awaitingCompletion ?? [];
+  const needsVenue = data?.needsVenue ?? [];
   const recent = data?.recent ?? [];
   const firstName = data?.profile?.firstName ?? null;
+
+  // Deep-link: ?openHangout=<id> (used by venue-prompt push notifs)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const id = new URLSearchParams(window.location.search).get("openHangout");
+    if (!id) return;
+    let cancelled = false;
+    fetch(`/api/hangouts/${id}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((h) => {
+        if (cancelled || !h) return;
+        setActiveHangoutDetail(h as HangoutDetail);
+        window.history.replaceState({}, "", "/");
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="max-w-[480px] mx-auto px-4 pt-5 pb-24 md:pb-6">
@@ -380,6 +449,22 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-4">
           <SectionLabel>hangouts</SectionLabel>
         </div>
+
+        {/* Needs a venue */}
+        {needsVenue.length > 0 && (
+          <div className="mb-5">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Needs a venue</p>
+            <ul className="space-y-3">
+              {needsVenue.map((h) => (
+                <NeedsVenueCard
+                  key={h.id}
+                  hangout={h}
+                  onClick={() => setActiveHangoutDetail(h as HangoutDetail)}
+                />
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Awaiting completion */}
         {awaitingCompletion.length > 0 && (

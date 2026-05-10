@@ -33,6 +33,8 @@ export function buildInviteSmsBody({ senderName, contact, hangout }: HangoutInvi
   let details: string;
   if (hangout.type === "in-person" && hangout.locationName) {
     details = `${hangout.locationName}${hangout.locationAddr ? ` (${hangout.locationAddr})` : ""} on ${dateStr}`;
+  } else if (hangout.type === "in-person") {
+    details = `somewhere TBD on ${dateStr}`;
   } else if (hangout.type === "digital" && hangout.platform) {
     const platformLabel = PLATFORM_LABELS[hangout.platform] ?? hangout.platform;
     details = `a ${platformLabel} call on ${dateStr}`;
@@ -83,6 +85,8 @@ export async function sendHangoutCalendarInvite(
     eventData.location = hangout.locationAddr
       ? `${hangout.locationName}, ${hangout.locationAddr}`
       : hangout.locationName;
+  } else if (hangout.type === "in-person") {
+    eventData.location = "TBD";
   } else if (hangout.type === "digital" && hangout.meetingLink) {
     eventData.url = hangout.meetingLink;
   }
@@ -94,6 +98,8 @@ export async function sendHangoutCalendarInvite(
   let locationLine = "";
   if (hangout.type === "in-person" && hangout.locationName) {
     locationLine = `<p><strong>Where:</strong> ${hangout.locationName}${hangout.locationAddr ? `, ${hangout.locationAddr}` : ""}</p>`;
+  } else if (hangout.type === "in-person") {
+    locationLine = `<p><strong>Where:</strong> TBD — ${senderName} will follow up with the venue.</p>`;
   } else if (hangout.type === "digital" && hangout.platform) {
     const label = PLATFORM_LABELS[hangout.platform] ?? hangout.platform;
     locationLine = `<p><strong>How:</strong> ${label}${hangout.meetingLink ? ` — <a href="${hangout.meetingLink}">Join link</a>` : ""}</p>`;
