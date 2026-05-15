@@ -20,6 +20,8 @@ model Contact {
   notes             String?
   // SMS consent: timestamp when the Misu user confirmed opt-in for this contact
   smsConsentAt      DateTime?
+  // Recipient-initiated opt-out (set when contact replies STOP/UNSUBSCRIBE/etc.)
+  smsOptOutAt       DateTime?
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
   schedules         CheckInSchedule[]

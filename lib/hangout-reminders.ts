@@ -79,7 +79,7 @@ export async function fireDueReminders(): Promise<number> {
     include: {
       hangout: {
         include: {
-          contact: { select: { firstName: true, lastName: true, phone: true } },
+          contact: { select: { firstName: true, lastName: true, phone: true, smsOptOutAt: true } },
         },
       },
     },
@@ -102,11 +102,16 @@ export async function fireDueReminders(): Promise<number> {
     }
 
     try {
-      if (reminder.channel === "sms" && hangout.contact.phone) {
+      if (reminder.channel === "sms" && hangout.contact.phone && !hangout.contact.smsOptOutAt) {
         const isToday = startOfDay(reminder.sendAt).getTime() === startOfDay(hangout.date).getTime();
+        const senderProfile = await prisma.userProfile.findUnique({ where: { userId: hangout.userId } });
+        const senderName = senderProfile
+          ? [senderProfile.firstName, senderProfile.lastName].filter(Boolean).join(" ")
+          : "";
+        const senderLabel = senderName ? ` with ${senderName}` : "";
         const body = isToday
-          ? `Reminder: your hangout is today${locationDetail} — ${dateStr}. See you there!`
-          : `Reminder: you have a hangout coming up${locationDetail} on ${dateStr}.`;
+          ? `Misu: Reminder — your hangout${senderLabel} is today${locationDetail}, ${dateStr}. Reply STOP to opt out.`
+          : `Misu: Reminder — your hangout${senderLabel} is coming up${locationDetail} on ${dateStr}. Reply STOP to opt out.`;
         await sendSms(hangout.contact.phone, body);
       }
 

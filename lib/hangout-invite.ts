@@ -43,9 +43,9 @@ export function buildInviteSmsBody({ senderName, contact, hangout }: HangoutInvi
     details = `a hangout on ${dateStr}`;
   }
 
-  let body = `Hey ${contactName}! ${senderName} wants to meet up — ${details}.`;
+  let body = `Misu: ${senderName} invited you (${contactName}) to hang out — ${details}.`;
   if (hangout.noteToFriend) body += ` "${hangout.noteToFriend}"`;
-  body += ` Reply YES to confirm, NO to decline, or suggest another time.`;
+  body += ` Reply YES to confirm, NO to decline, or text another time. Reply STOP to opt out, HELP for help.`;
   return body;
 }
 
