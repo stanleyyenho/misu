@@ -46,9 +46,10 @@ export default function PrivacyPage() {
 
       <Section title="SMS Messaging">
         <p>Misu uses SMS to send hangout invitations and reminders to contact phone numbers you provide. By adding a contact&rsquo;s phone number to Misu, you confirm that you have their permission to contact them on your behalf.</p>
-        <p>Message and data rates may apply. Message frequency varies based on your configured check-in cadence.</p>
-        <p><strong>To opt out:</strong> Any recipient of a Misu SMS can reply <strong>STOP</strong> at any time to stop receiving messages. Reply <strong>HELP</strong> for assistance. Opt-outs are processed immediately.</p>
-        <p>We do not share phone numbers with third parties for their marketing purposes.</p>
+        <p><strong>Message frequency:</strong> Message frequency varies based on your configured hangout cadence. A recipient typically receives one invitation message and up to two reminder messages (three days before and the day of) per scheduled hangout, plus updates if the hangout is rescheduled.</p>
+        <p><strong>Message and data rates may apply.</strong> Standard message and data rates from your wireless carrier may apply to messages sent and received.</p>
+        <p><strong>To opt out:</strong> Any recipient of a Misu SMS can reply <strong>STOP</strong>, <strong>STOPALL</strong>, <strong>UNSUBSCRIBE</strong>, <strong>CANCEL</strong>, <strong>END</strong>, or <strong>QUIT</strong> at any time to immediately stop receiving messages. Reply <strong>HELP</strong> or <strong>INFO</strong> for assistance. Reply <strong>START</strong> or <strong>UNSTOP</strong> to re-enable messages after opting out. Opt-outs are processed immediately.</p>
+        <p><strong>No mobile information will be shared with third parties or affiliates for marketing or promotional purposes.</strong> All categories of personal information described in this policy exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.</p>
       </Section>
 
       <Section title="Data Sharing">

@@ -14,7 +14,7 @@ export async function POST(
   const hangout = await prisma.hangout.findFirst({
     where: { id, userId: user.id },
     include: {
-      contact: { select: { firstName: true, lastName: true, phone: true, email: true } },
+      contact: { select: { firstName: true, lastName: true, phone: true, email: true, smsConsentAt: true, smsOptOutAt: true } },
     },
   });
   if (!hangout) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -23,6 +23,12 @@ export async function POST(
   }
   if (!hangout.contact.phone) {
     return NextResponse.json({ error: "Contact has no phone number" }, { status: 422 });
+  }
+  if (!hangout.contact.smsConsentAt) {
+    return NextResponse.json({ error: "Contact has not been marked as having SMS consent" }, { status: 422 });
+  }
+  if (hangout.contact.smsOptOutAt) {
+    return NextResponse.json({ error: "Contact has opted out of SMS" }, { status: 422 });
   }
 
   const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });

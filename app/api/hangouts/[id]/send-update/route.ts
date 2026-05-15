@@ -14,7 +14,7 @@ export async function POST(
   const { id } = await params;
   const hangout = await prisma.hangout.findFirst({
     where: { id, userId: user.id },
-    include: { contact: { select: { firstName: true, lastName: true, phone: true, email: true } } },
+    include: { contact: { select: { firstName: true, lastName: true, phone: true, email: true, smsOptOutAt: true } } },
   });
   if (!hangout) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -29,7 +29,7 @@ export async function POST(
 
   const updated = await prisma.hangout.update({ where: { id }, data });
 
-  if (notify && hangout.contact.phone && hangout.status !== "draft") {
+  if (notify && hangout.contact.phone && hangout.status !== "draft" && !hangout.contact.smsOptOutAt) {
     const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
     const senderName = profile ? [profile.firstName, profile.lastName].filter(Boolean).join(" ") : "Someone";
     const mergedHangout = { ...hangout, ...data, id: hangout.id, date: data.date instanceof Date ? data.date : hangout.date };

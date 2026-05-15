@@ -33,6 +33,28 @@ export async function POST(request: Request) {
     return new NextResponse("<Response/>", { headers: { "Content-Type": "text/xml" } });
   }
 
+  const normalized = rawBody.toUpperCase();
+  const STOP_KEYWORDS = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"];
+  const START_KEYWORDS = ["START", "UNSTOP", "YES"]; // YES also doubles as RSVP — see below
+  const HELP_KEYWORDS = ["HELP", "INFO"];
+
+  // STOP / HELP must be handled regardless of whether a hangout is pending.
+  // Twilio's Messaging Service auto-replies to STOP/HELP; we mirror the state in our DB.
+  if (STOP_KEYWORDS.includes(normalized)) {
+    await prisma.contact.updateMany({
+      where: { phone: from },
+      data: { smsOptOutAt: new Date() },
+    });
+    return new NextResponse("<Response/>", { headers: { "Content-Type": "text/xml" } });
+  }
+
+  if (HELP_KEYWORDS.includes(normalized)) {
+    return new NextResponse(
+      `<Response><Message>Misu: Hangout invites &amp; reminders. Reply YES to confirm, NO to decline, STOP to opt out. Help: misu.app/marketing/terms</Message></Response>`,
+      { headers: { "Content-Type": "text/xml" } }
+    );
+  }
+
   // Find the most recent invited hangout for this phone number
   const contact = await prisma.contact.findFirst({
     where: { phone: from },
@@ -45,6 +67,14 @@ export async function POST(request: Request) {
     },
   });
 
+  // START re-opts-in even if there's no pending hangout
+  if (normalized === "START" || normalized === "UNSTOP") {
+    if (contact) {
+      await prisma.contact.update({ where: { id: contact.id }, data: { smsOptOutAt: null } });
+    }
+    return new NextResponse("<Response/>", { headers: { "Content-Type": "text/xml" } });
+  }
+
   const hangout = contact?.hangouts?.[0];
 
   if (!hangout) {
@@ -52,10 +82,9 @@ export async function POST(request: Request) {
     return new NextResponse("<Response/>", { headers: { "Content-Type": "text/xml" } });
   }
 
-  const normalized = rawBody.toUpperCase();
   let newStatus: string;
 
-  if (normalized === "YES" || normalized === "Y" || normalized === "ACCEPT") {
+  if (START_KEYWORDS.includes(normalized) || normalized === "Y" || normalized === "ACCEPT") {
     newStatus = "confirmed";
   } else if (normalized === "NO" || normalized === "N" || normalized === "DECLINE") {
     newStatus = "declined";
