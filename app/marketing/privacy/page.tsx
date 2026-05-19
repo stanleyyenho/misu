@@ -44,12 +44,14 @@ export default function PrivacyPage() {
         <p>We do <strong>not</strong> sell your personal information or your contacts&rsquo; information to third parties. We do <strong>not</strong> use your data or your contacts&rsquo; data for marketing purposes unrelated to the Misu service.</p>
       </Section>
 
-      <Section title="SMS Messaging">
-        <p>Misu uses SMS to send hangout invitations and reminders to contact phone numbers you provide. By adding a contact&rsquo;s phone number to Misu, you confirm that you have their permission to contact them on your behalf.</p>
-        <p><strong>Message frequency:</strong> Message frequency varies based on your configured hangout cadence. A recipient typically receives one invitation message and up to two reminder messages (three days before and the day of) per scheduled hangout, plus updates if the hangout is rescheduled.</p>
-        <p><strong>Message and data rates may apply.</strong> Standard message and data rates from your wireless carrier may apply to messages sent and received.</p>
-        <p><strong>To opt out:</strong> Any recipient of a Misu SMS can reply <strong>STOP</strong>, <strong>STOPALL</strong>, <strong>UNSUBSCRIBE</strong>, <strong>CANCEL</strong>, <strong>END</strong>, or <strong>QUIT</strong> at any time to immediately stop receiving messages. Reply <strong>HELP</strong> or <strong>INFO</strong> for assistance. Reply <strong>START</strong> or <strong>UNSTOP</strong> to re-enable messages after opting out. Opt-outs are processed immediately.</p>
-        <p><strong>No mobile information will be shared with third parties or affiliates for marketing or promotional purposes.</strong> All categories of personal information described in this policy exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.</p>
+      <Section title="SMS Messaging and Mobile Information">
+        <p><strong>Program:</strong> Misu uses SMS to send hangout invitations, RSVP confirmations, schedule updates, and reminders to phone numbers provided by Misu account holders.</p>
+        <p><strong>Consent:</strong> By adding a contact&rsquo;s phone number to Misu, the Misu account holder confirms they have that contact&rsquo;s permission to be sent SMS messages through Misu on their behalf. Recipients consent to receive messages and may opt out at any time as described below.</p>
+        <p><strong>Message frequency:</strong> Message frequency varies. A recipient typically receives one invitation message, up to two reminder messages (three days before and the day of the hangout), and a confirmation or update message per scheduled hangout.</p>
+        <p><strong>Message and data rates may apply.</strong> Standard message and data rates from your wireless carrier may apply to messages sent and received through Misu.</p>
+        <p><strong>Opt-out:</strong> Recipients can opt out at any time by replying <strong>STOP</strong>, <strong>STOPALL</strong>, <strong>UNSUBSCRIBE</strong>, <strong>CANCEL</strong>, <strong>END</strong>, or <strong>QUIT</strong> to any Misu message. After opting out, no further messages will be sent. Reply <strong>HELP</strong> or <strong>INFO</strong> at any time to receive support information. Reply <strong>START</strong> or <strong>UNSTOP</strong> to re-enable messages after opting out.</p>
+        <p><strong>Mobile information sharing:</strong> No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. All the above categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties. The information (such as phone numbers) obtained as part of the SMS consent process will not be shared with third parties for marketing purposes. Phone numbers collected for SMS communication purposes will not be sold or shared with any third parties.</p>
+        <p><strong>For help or questions about Misu SMS messaging, contact:</strong> <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
       </Section>
 
       <Section title="Data Sharing">
